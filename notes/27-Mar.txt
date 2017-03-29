@@ -1,0 +1,27 @@
+From "Beyond prediction: Using big data for policy problems":
+	How am I going to tbe able to get causality? Seems like domian knowledge will be important to have. Need to read through some tutorials etc on this area.
+
+Contact the authors as soon as possible? Want to know if I can have their data or not, since I'll need to get going on bloomberg asap if I can have theirs. Maybe need bloomberg anyway?
+
+More papers
+
+
+Decisions
+--------------
+Technical
+	Spark / pyspark / MLlib?
+	How much freedom
+
+PM
+	GitLab issue system? Tracking etc
+	Meetings?
+	Project timeline to tie in with publication
+		On that subject;
+		Conference 2017....July 15-20th
+		Conference 2018....July 14-19th. 
+			Submission of papers January 15th 2018
+			Notification of acceptance March 18th 2018
+			Workshop papers?? - Submission March 12th 2018
+		What about short papers
+		"Short papers are also welcome and can be used to describe work in progress or project ideas." 
+		
