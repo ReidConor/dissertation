@@ -1,0 +1,96 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww19000\viewh19260\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf0 Slide 1\
+
+\b0 Hi guys, my name is Conor Reid and the title of my project it \'93The Relationship Between Corporate Governance and Company Performance\'94 and in this space, I\'92m looking to apply new factors, new models and new approaches to causality. \
+
+\b \
+Slide 2\
+
+\b0 So just a quick overview of what I\'92ll be speaking about today;\
+	I\'92ll go over the motivation for this work and previous work in this space, \
+	Then I\'92ll talk about the approach I\'92ll take, 	\
+	Then the academic and practical contributions I hope to achieve\
+	Then the data requirements for this project\
+	How I\'92m going to measure success and finish with a plan for when ill get all this done\
+
+\b \
+Slide 3\
+
+\b0 So the way that corporations self-govern varies a lot across firms, with much debate on how best to do to in order to positively influence company performance. So its nature then to study how these features can be optimised for best performance, whatever that actually means. That\'92s not always an easy question to answer, whats best for the shareholders may not be best for the directors and so on. 
+\b \
+\
+
+\b0 A recent paper in this space was written by Moldovan and Mutu. So they collected data from Bloomberg, that contained a large amount of corporate governance features and measures of success, and learned models to try and use one to predict the other. Based on that then they could come up with some simple rules to answer these questions.
+\b \
+\
+Slide 4\
+
+\b0 They were able to do that pretty accurately, using different algorithms and measures of success and were able to put forward some basic rules. The paper is not without its limitations however. The authors used a limited range of success indicators, that may not best represents actual success. Some algorithms are left to be explored (like kernel regression for example) that may yield positive results\
+And the big thing is that they propose rules that are really correlations, without working to further backup those rules by proving causality that they infer.\
+So these are the areas that I\'92ll be working to improve on. So that will include considering alternative features and measures of governance and success, using alternative techniques that may yield better results as well as studying modern work in proving causality and applying it here. \
+ \
+So I\'92ll just quickly go over some key pieces of research in this space. Pearl is one of the most influential figures in causality in this space, and discuss the topic in depth in his book. King and others propose a novel method for data matching to infer causality. So they came up with an optimal way of pruning a dataset while maintain the variance within it, which lets you eventual move towards inferring causality. And Athey discusses when simple prediction is appropriate, and when deeper work to infer causality is required.   
+\b \
+
+\b0 A combination of what MM did and that research then will inform my project. 
+\b \
+\
+Slide 5\
+
+\b0 I\'92ll just quickly then outline my approach to the this project.\
+Obviously first I need to acquire some data that will allow me to carry out some analysis. This is a little be complicated but I\'92ll talk about it in a few slides. \
+I\'92ll work to reproduce some of M&M\'92s results, and try to reach the same conclusions they did.\
+I then try to take their results and improve on them, by using different algorithms (maybe something like neural nets, different types of regression and so on).\
+I\'92ll also look into introducing some measures of governance and success they didn\'92t consider, with a view to again improving on their results and introducing different metrics into the space. \
+Then the big thing, which really moves the project from a practicum into being a dissertation, is to study modern work in casualty and try to apply it here. Its clear from my reading so far that this is quite a difficult thing to do. Lots of research says it felt out can\'92t be done, its can\'92t be proven. Others how offered methodologies and techniques and algorithms for inferring causation. So the aim is to study the field and try and pick out some ways of strengthening M&M\'92s be inferring causation rather than just correlation.  
+\b \
+\
+Slide 6\
+
+\b0 As I mentioned this is a dissertation so some academic contribution is required. And its really in the space of proving or inferring causality where that contribution is. In one of the references I showed early, they say that \'93A deeper question concerns whether a given problem can be solved using only prediction techniques, or whether statistical approaches to finding a casual effect are required\'94. So they\'92re saying that in some cases pure prediction is fine, it gets good results and that the end of it. A lot of research and development can gone into prediction techniques and there\'92s a lot of very good ones out there that are very easy to use. But there is a higher level of analysis and understanding you can achieve by moving towards a causal model, where a lot of value can be added. And in this particular domain, being able to do that would be a significant contribution. 
+\b \
+\
+Slide 7\
+
+\b0 I\'92ve just put a little bit about the practical application of this research, because is it relevant. So as we heard the research says that some problems can be solved by relying on prediction and correlation but there are certainly those that require deeper analysis and understanding. And for those you need to go into causality.\
+And then by exploring other features of corporate governance and success as well as using cutting edge algorithms, an advance in this particular domain can be achieved and best practice for governance can be proposed. \
+
+\b \
+Slide 8\
+
+\b0 Ok so this slide is about the data that M&M used in their study. So the study that I\'92m replicating and trying to build on. They looked at three stock indexes; the S&P500 which is made up of 500 US companies, and the STOXX Europe 600 and Eastern Europe 300. So they looked at companies across the US and Europe, and from that they were able to collect a dataset of 1400 records and 52 features. Now that reduced a little due to cleaning and removing records with missing values etc. So we\'92re not talking about \'93big data\'94, and for that reason they actually used resampling techniques to get better results. A notable omission here is Asia and the emerging market, which might be an area to explore in my research. \
+Of those 52 features, two are the explanatory variables. So in M&M\'92s prediction models, these are the target variables. Tobin\'92s Q is a simple measure of market value and asset value. Its a measure of a companies intangible assets, and its proportional to things like the market cap, liabilities and preferred equity. The other explanatory variable is the Altman Z score, which is made up of the companies working capital, tangible assets and market value etc. This is a predictor that a firm will go into bankruptcy within two years. So as I say, these may not be the best indicators of how well a company is doing. The authors justify using them but do note their limitations. So they might be room for others here.\
+
+\b \
+Slide 9\
+
+\b0 In terms of actually souring the data myself, I have two options. Firstly I can contact the original authors and request the data they used. Obviously this will allow me to very closely replicate their study and more closely match my results to theirs. Its also a lot quicker to be handed the data. So I\'92ve contacted them via email, and am awaiting a reply. If that doesn\'92t work out then I\'92ll have to source it myself from the Bloomberg terminals that we have available here. This will give me more autonomy to construct the study myself and I\'92ll get some experience with Bloomberg which is good. Obviously that comes with a time commitment attached. \
+
+\b \
+Slide 10\
+
+\b0 Ok, so I\'92m terms measuring success on this project I\'92m going to run through the goals and show how of if I\'92ll know when they\'92re achieved. \
+In terms of considering other features and measures of governance and success, thats an ongoing process that may continue for much of the project lifecycle. It\'92s not too difficult to add in another feature and test whether it improves results or not right. So that\'92s a difficult one to nail down but if i can get a few more features that improve results, or even remove some from M&M\'92s dataset than that will be good. \
+Reproducing some of M&M\'92s results is a pretty solid goal, I\'92m trying to build models that at least match theirs. And can tell quick easily if I\'92ve done better.\
+Again carrying out new techniques is a quantifiable goal and I can tell when I\'92ve got better models. \
+Investigating modern work in causality in difficult to measure since its quite open and there\'92s a lot out there in terms of techniques and methodologies to do so. I suppose what can really be done in this space will become clear as I read into the subject more and see what others have been able to do. \
+
+\b \
+Slide 11\
+
+\b0 This is the last slide then, just a rough summary of how I\'92ve laid the project out in terms of a timeline. I suppose the key thing to point our here is that I\'92m aiming to publish a technical paper on this project by January 2018. This is the deadline for the same conference of M&M, to submit papers to thats a clear cutoff point to aim for. 
+\b \
+\
+\
+Slide 12\
+
+\b0 Thanks guys for your time, and I welcome any questions.
+\b \
+
+\b0 \
+}
