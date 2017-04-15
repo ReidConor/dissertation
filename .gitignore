@@ -13,6 +13,7 @@
 *.lof
 *.gz
 *.toc
+*.lot
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
