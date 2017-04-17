@@ -197,8 +197,11 @@ notation
 %% \end{enumerate}
 %% \end{enumerate}
 
-
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\include{color}
 \begin{document}
+
 
 \frontmatter % This is the material before chapter 1, page numbering in Roman numerals ii, iii, iv, ...
 
@@ -328,10 +331,10 @@ To my...
 \include{ch1}
 \include{ch2}
 \include{ch3}
-\include{ch4}
-\include{ch5}
-\include{ch6}
-\include{ch7}
+%\include{ch4}
+%\include{ch5}
+%\include{ch6}
+%\include{ch7}
 
 %%   These next two items are more or less the same (epilogue is just the Greek for afterword!)
 %%   They are unlikely to be long enough to justify their own file(s) to \include
@@ -364,9 +367,9 @@ To my...
 
 %%   Glossary of terms
 %%   \include this as it may be big enough to justify its own ``chapter''
-\cleardoublepage
-\addcontentsline{toc}{chapter}{Glossary}
-\include{glossary}
+%\cleardoublepage
+%\addcontentsline{toc}{chapter}{Glossary}
+%\include{glossary}
 
 %%   Bibliography (References)
 % For this, use BibTeX (invariably comes with your LaTeX installation).  BibTeX separates the form of a
