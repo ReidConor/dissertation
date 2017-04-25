@@ -199,15 +199,23 @@ notation
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{hyperref}
 \include{color}
+\hypersetup{
+    colorlinks=false, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
+
 \begin{document}
 
 
 \frontmatter % This is the material before chapter 1, page numbering in Roman numerals ii, iii, iv, ...
 
 \title%[Abbreviated Title for Header]
-    {\bf The Relationship Between Corporate Governance and Company Performance\\
-   \Large{ New Factors, Models, and Approaches to Causality}}
+    {{\bf The Relationship Between Corporate Governance and Company Performance\\}
+   \Large{ New Factors, Models and Approaches to Causality}}
 
 \author{Conor Reid B.A, B.A.I, H.Dip}  % change to suit!
 \date{}
@@ -253,6 +261,7 @@ University College Dublin
 
 %% Dedication
 \chapter*{Dedication}
+{To my...}
 
 
 
@@ -305,20 +314,20 @@ University College Dublin
 
 
 %% Preface (including authors' signatures: may precede table of contents)
-\include{preface}
+%\include{preface}
 
 
 %% Acknowledgements (including permissions and other credits).  Modify as appropriate
 
 \chapter{Acknowledgements}
-To my...
+Thanks to...
 
 
 %% Abstract
 
 %\begin{abstract}
 \chapter{Abstract}
-{This project aims to...}
+{This project...}
 %%   List of important abbreviations (including special fonts, e.g.,\ {\tt fixed width} for program code)
 
 % Bulk of thesis. line numbers in arabic numerals, 1, 2, 3, ...
@@ -329,12 +338,12 @@ To my...
 % \include all your chapters.  This automatically puts the material on a new page.  Recall that \chapter{} and
 % \chapter*{} start a new chapter on a new odd-numbered page, but won't put extra empty pages along with \include
 \include{ch1}
-\include{ch2}
+%\include{ch2}
 \include{ch3}
-%\include{ch4}
-%\include{ch5}
-%\include{ch6}
-%\include{ch7}
+\include{ch4}
+\include{ch5}
+\include{ch6}
+\include{ch7}
 
 %%   These next two items are more or less the same (epilogue is just the Greek for afterword!)
 %%   They are unlikely to be long enough to justify their own file(s) to \include
@@ -359,7 +368,8 @@ To my...
 % in the table of contents.  If so, edit thesis.toc and move the Appendices line there above the first appendix,
 % then re-run LaTeX to get the thesis.dvi file right.  You may have to repeatedly do this every time you LaTeX!
 \cleardoublepage
-\include{appendix1}
+%detailed tables
+%\include{appendix1}
 \include{appendix2}
 % and so on
 

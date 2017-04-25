@@ -1,0 +1,34 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww14200\viewh7320\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf0 Matching methods for casual inference : A review and look forward - 1233\
+\
+
+\b0 Abstract\
+\'97\
+When estimating casual effects using observational data, it is desirable to replicate a randomised experiment as closely as possible by obtaining treated and control groups with similar covariate distributions.\
+This goal can often be achieved by choosing well-matched samples o the original treated and control groups, thereby reducing bias due to the covariates. \
+	So we want to simulate the treated / untreated groups seen in medical studies (for example)\
+\
+Work on matching methods has examined how to best choose treated and control subjects for comparison. Matching methods are gaining popularity, but up until now research has been scattered across disciplines. This paper provides a structure for thinking about matching methods and guidance on their use, coalescing the existing research (both old and new) and providing a summary of where the literature on matching methods is now and where it should be headed. \
+\
+Introduction\
+\'97\
+One of the key benefits of randomised experiments for estimating casual effects is that the treated and control groups are guaranteed to be only randomly different from one another on all background covariates, both observed and unobserved. Work on matching methods has examined how to replicate this as much as possible for observed covariates with observational data. This paper coalesces the diverse literature on matching methods. \
+\
+Define \'93matching\'94 broadly to be any method that aims to equate (or balance) the distribution of covariates in the treated and control groups. This may involve 1:1 matching, weighting, or subclassification. Non-experimental studies require even more \'93design\'93 than experimental ones. \
+Two key stages:\
+	Design - use background information on the individuals in the study, designing the non-experimental study as would be a randomised experiment without access to the outcome values. Matching methods are a key tool here\
+	Outcome analysis - begins after stage 1, and involves comparing the outcomes of the treated and control individuals. While matching is generally used to estimate casual effects, it is also sometimes used for non-casual questions.\
+\
+Steps in implementing matching methods\
+	1. defining \'93closeness\'94. The distance measure used to determine whether an individual is a good match for another\
+	2. Implementing a matching method given that measure of closeness \
+	3. Assessing the quality of the resulting matched samples, and perhaps iterating with steps 1 and 2 until well matched samples result\
+	4. analysis of the outcome and estimation of the treatment effect, given the matching done in step 3\
+\
+\
+The next few sections go through these points one by one}
