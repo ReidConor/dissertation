@@ -1,2 +1,2 @@
-# The relationship between corporate governance and company performance: new factors, new models, new approaches to causality
+# Corporate Governance and Company Performance
 Placeholder for dissertation related work
