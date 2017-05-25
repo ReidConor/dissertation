@@ -1,0 +1,86 @@
+---
+title: "EDA - Corporate Governance and Company Performance"
+author: "Conor Reid"
+date: "23/5/2017"
+output: pdf_document
+---
+```{r}
+setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
+``` 
+
+```{r}
+library(reshape)
+library(stringr)
+library(rpart)
+library(lattice)
+library(ggplot2)
+```
+
+
+
+### S&P 500
+The S&P 500 is an American stock market index including market capitalizations of 500 companies, listed on the NYSE or the NASDAQ. It is distinct from other indexs such as the Dow Jones etc due to its diverse constituency and weighting methodology.
+*Would it be useful to look at other index's?*
+
+Read in data as below.
+```{r}
+setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
+spx=read.csv("spx.csv", sep=",", na.strings="#N/A N/A") 
+spx_EDA = spx[c("Ticker", "Tobin.s.Q", "P.E", "EPS", "P.B", "P.EBITDA", 
+                "Board.Size", "CEO.Duality", "X..Feml.Execs", 
+                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..")]
+spx_EDA[ spx_EDA == "#N/A Field Not Applicable" ] <- NA
+```
+
+
+```{r}
+spx_EDA$P.B=as.numeric(spx_EDA$P.B)
+spx_EDA$P.E=as.numeric(spx_EDA$P.E)
+spx_EDA$EPS=as.numeric(spx_EDA$EPS)
+spx_EDA$P.EBITDA=as.numeric(spx_EDA$P.EBITDA)
+spx_EDA$TickerID = str_split_fixed(spx_EDA$Ticker, " ", 2)[,1] #parse the ticker itself
+```
+
+```{r, message=FALSE, warning=FALSE}
+#distrib
+ggplot(data=spx_EDA) +
+  geom_histogram( aes(Tobin.s.Q, ..density..) ) +
+  geom_density( aes(Tobin.s.Q, ..density..) ) +
+  geom_rug( aes(Tobin.s.Q) )
+```
+
+```{r, warning=FALSE}
+##P.B
+ggplot(spx_EDA, aes(P.B, Tobin.s.Q) ) +
+  geom_point()
+  #with labels
+  ggplot(spx_EDA, aes(P.B, Tobin.s.Q, label=TickerID) ) +
+    geom_point() +geom_text(size = 3)
+```
+  
+```{r, warning=FALSE}
+#no difference
+ggplot(data=subset(spx_EDA, !is.na(CEO.Duality)),
+  aes(CEO.Duality, Tobin.s.Q )) +
+  geom_point() + geom_boxplot()
+```
+
+```{r, message=FALSE, warning=FALSE}
+#board average age
+ggplot(data=spx_EDA) +
+  geom_histogram( aes(Bd.Avg.Age, ..density..) ) +
+  geom_density( aes(Bd.Avg.Age, ..density..) ) +
+  geom_rug( aes(Bd.Avg.Age) )
+```
+
+```{r, warning=FALSE}
+#female presence on board and success?
+ggplot(spx_EDA, aes(Tobin.s.Q, X..Feml.Execs) ) +
+  geom_point()
+```
+
+### STOXX® Europe 600
+
+### STOXX Eastern Europe 300
+
+
