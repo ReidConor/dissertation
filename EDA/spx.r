@@ -2,13 +2,14 @@ library(reshape)
 library(stringr)
 library(rpart)
 setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
-
 #######functions
 #function to give me the functionality of trimming string fields
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 #american 500
 spx=read.csv("spx.csv", sep=",", na.strings="#N/A N/A") 
+
+
 View(spx)
 spx$TickerID = str_split_fixed(spx$Ticker, " ", 2)[,1]
 spx$Equity = trim(str_split_fixed(spx$Ticker, " ", 2)[,2])
@@ -50,19 +51,33 @@ spx_EDA = spx[c("Ticker", "Tobin.s.Q", "P.E", "EPS", "P.B", "P.EBITDA",
                 "Board.Size", "CEO.Duality", "X..Feml.Execs", 
                 "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..")]
 spx_EDA[ spx_EDA == "#N/A Field Not Applicable" ] <- NA
-spx_EDA$P.B=as.numeric(spx_EDA$P.B)
-spx_EDA$P.E=as.numeric(spx_EDA$P.E)
-spx_EDA$EPS=as.numeric(spx_EDA$EPS)
-spx_EDA$P.EBITDA=as.numeric(spx_EDA$P.EBITDA)
+sapply(spx_EDA,class)
+cols.num <- c("P.B","EPS","P.E","P.EBITDA")
+spx_EDA[cols.num] <- sapply(spx_EDA[cols.num],as.numeric)
+sapply(spx_EDA, class)
+
 
 
 View(spx_EDA)
 #exploration around Tobins Q 
 #distrib
 ggplot(data=spx_EDA) +
-  geom_histogram( aes(Tobin.s.Q, ..density..) ) +
+  geom_histogram( aes(Tobin.s.Q, ..density..), bins=40 ) +
   geom_density( aes(Tobin.s.Q, ..density..) ) +
-  geom_rug( aes(Tobin.s.Q) )
+  geom_rug( aes(Tobin.s.Q) ) +
+  geom_vline(aes(xintercept=mean(Tobin.s.Q, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=median(Tobin.s.Q, na.rm=T)),   # Ignore NA values for mean
+             color="blue", linetype="dashed", size=1)
+#use log Q score
+ggplot(data=spx_EDA) +
+  geom_histogram( aes(log(Tobin.s.Q), ..density..), bins=40 ) +
+  geom_density( aes(log(Tobin.s.Q), ..density..) ) +
+  geom_rug( aes(log(Tobin.s.Q) )) +
+  geom_vline(aes(xintercept=mean(log(Tobin.s.Q), na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=median(log(Tobin.s.Q), na.rm=T)),   # Ignore NA values for mean
+             color="blue", linetype="dashed", size=1)
 
 ##P.B
 ggplot(spx_EDA, aes(P.B, Tobin.s.Q) ) +
