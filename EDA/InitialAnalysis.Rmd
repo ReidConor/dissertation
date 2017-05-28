@@ -1,12 +1,13 @@
 ---
 title: "EDA - Corporate Governance and Company Performance"
 author: "Conor Reid"
-date: "23/5/2017"
+date: "28/5/2017"
 output: pdf_document
 ---
-Set the working directory (not shown) and load in the required packages. 
+Set the working directory and read in data as "spx" (not shown) and load in the required packages. 
 ```{r, echo=FALSE}
 setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
+spx=read.csv("spx.csv", sep=",", na.strings="#N/A N/A") 
 ``` 
 ```{r}
 library(reshape)
@@ -18,15 +19,16 @@ library(ggplot2)
 
 
 # S&P 500
-The S&P 500 is an American stock market index including market capitalizations of 500 companies, listed on the NYSE or the NASDAQ. It is distinct from other indexs such as the Dow Jones etc due to its diverse constituency and weighting methodology.
+The S&P 500 is an American stock market index including market capitalization of 500 companies, listed on the NYSE or the NASDAQ. It is distinct from other indexes such as the Dow Jones etc due to its diverse constituency and weighting methodology.
 *Would it be useful to look at other index's?*
 
-Read in full data as below, and carry out some subsetting. Set NA values. 
+Read in full data as below, and carry out some sub-setting. Set NA values. 
 ```{r}
-spx=read.csv("spx.csv", sep=",", na.strings="#N/A N/A") 
 spx_EDA = spx[c("Ticker", "Tobin.s.Q", "P.E", "EPS", "P.B", "P.EBITDA", 
                 "Board.Size", "CEO.Duality", "X..Feml.Execs", 
-                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..")]
+                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..", 
+                "Asset", "Interest", "Tax", "ROE", "ROC",
+                "Indep.Directors")]
 spx_EDA[ spx_EDA == "#N/A Field Not Applicable" ] <- NA
 ```
 
@@ -39,12 +41,19 @@ sapply(spx_EDA, class)
 spx_EDA$TickerID = str_split_fixed(spx_EDA$Ticker, " ", 2)[,1] #parse the ticker itself
 ```
 \newpage
-### Missing Data
+## Missing Data
+Cases with missing values. Seems high (73 / 500 = 14.6% loss if we discount them). 
+```{r}
+sum(!complete.cases(spx_EDA))
+```
+```{r}
+summary(spx_EDA)
+```
 
 
 
 \newpage
-### Tobins Q
+## Tobins Q
 Histogram of Tobins Q over the entire dataset. Heavily skewed right, most companies have low scores. It is going to be difficult to learn rules for high performing companies? 
 From M&M:
 
@@ -60,11 +69,12 @@ ggplot(data=spx_EDA) +
   geom_vline(aes(xintercept=mean(Tobin.s.Q, na.rm=T)),  # red line is the mean
                color="red", linetype="dashed", size=1) +
   geom_vline(aes(xintercept=median(Tobin.s.Q, na.rm=T)),  # blue line is the median
-               color="blue", linetype="dashed", size=1)
+               color="blue", linetype="dashed", size=1) +
+  ggtitle("Tobins Q Histogram")
 ```
 
 \newpage
-Try taking the log of Tobins Q instead, histogram shown below. The code is emitted since its the same as previous page but used log(Tobin.s.Q) instead. Much less skewed, making regression more applicable? 
+Try taking the log of Tobins Q instead, histogram shown below. The code is emitted since its the same as previous page but used log(Tobin.s.Q) instead. Much less skewed, making regression more applicable? Is it OK to process the dependent variable like this?
 ```{r, message=FALSE, warning=FALSE}
 ggplot(data=spx_EDA) +
   geom_histogram( aes(log(Tobin.s.Q), ..density..), bins=40 ) +
@@ -73,43 +83,52 @@ ggplot(data=spx_EDA) +
   geom_vline(aes(xintercept=mean(log(Tobin.s.Q), na.rm=T)),  # red line is the mean
                color="red", linetype="dashed", size=1) +
   geom_vline(aes(xintercept=median(log(Tobin.s.Q), na.rm=T)),  # blue line is the median
-               color="blue", linetype="dashed", size=1)
+               color="blue", linetype="dashed", size=1) +
+  ggtitle("Log (Tobins Q) Histogram")
 ```
-Poisson regression could be a good alternative to having to process the Q score directly, obviously assumes the dependant variable has a Poisson distribution.
+Poisson regression could be a good alternative to having to process the Q score directly, obviously assumes the dependent variable has a Poisson distribution.
 
 See https://en.wikipedia.org/wiki/Poisson_distribution 
 
-I dont think this it actually does, but Poisson regression may be more applicable here that OLS for example.
+I don't think this it actually does, but Poisson regression may be more applicable here that OLS for example.
 \newpage
 
-### P.B (price to book ratio)
-A high P.B means that investors see the company as growing, low means they think the companys book value is exaggerated (http://www.investopedia.com/terms/p/price-to-bookratio.asp).
+### P.B (price to book ratio) and Q Score
+A high P.B means that investors see the company as growing, low means they think the company's book value is exaggerated (http://www.investopedia.com/terms/p/price-to-bookratio.asp).
 
 Interesting spike in Q score around the 150 P.B mark. Maybe worth further investigation?
 ```{r, warning=FALSE}
 ##P.B
 ggplot(spx_EDA, aes(P.B, Tobin.s.Q) ) +
-  geom_point()
+  geom_point() +
+  ggtitle("Price to Book Ratio Vs. Tobins Q")
 ```
 
 \newpage
-Same as previous page, but showing the tickers for each data point. VRTX is a particular outler (Vertex Pharmaceuticals Incorporated). 
+Same as previous page, but showing the tickers for each data point. VRTX is a particular outlier (Vertex Pharmaceuticals Incorporated). 
 ```{r, warning=FALSE}
 #with labels
  ggplot(spx_EDA, aes(P.B, Tobin.s.Q) ) +
     geom_point() +
-    geom_text(aes(label=TickerID),hjust=1, vjust=-1)
+    geom_text(aes(label=ifelse(P.B>100 & P.B<200 & Tobin.s.Q>5,as.character(TickerID),'')),hjust=1.2, vjust=1)+
+  ggtitle("Price to Book Ratio Vs. Tobins Q with Data Labels")
 ```
 
 \newpage
+### CEO Duality and Q Score
+Research suggests the CEO Duality can be either a positive or negative influence on the success of a company, looks from the below that perhaps its not that big of an influence at all. No deviation in Q score based on duality.
+
 ```{r, warning=FALSE}
 #no difference
 ggplot(data=subset(spx_EDA, !is.na(CEO.Duality)),
   aes(CEO.Duality, Tobin.s.Q )) +
-  geom_point() + geom_boxplot()
+  geom_point() + geom_boxplot()+
+  ggtitle("Effect of CEO Duality on Tobins Q")
 ```
 
 \newpage
+### Board Average Age and Q Score
+Seems to be pretty normally distributed, skewed left due to some very young boards. 
 ```{r, message=FALSE, warning=FALSE}
 #board average age
 ggplot(data=spx_EDA) +
@@ -119,13 +138,56 @@ ggplot(data=spx_EDA) +
 ```
 
 \newpage
-Tobins Q and the number of female executives. Seems to cluster around the bottom left hand courner at low numbers and low performance, but cant see much to the upper right. Doesnt look like a strong relationship here anyway.
+### Number of Female Executives and Q Score
+Tobins Q and the number of female executives. Seems to cluster around the bottom left hand corner at low numbers and low performance, but cant see much to the upper right. Doesn't look like a strong relationship here anyway.
+
+According to M&M:
+
+> Tobin’s Q ratio is positively influenced by the percentage women in the board
+
+May need to look into this further.
 ```{r, warning=FALSE}
 #female presence on board and success?
 ggplot(spx_EDA, aes(Tobin.s.Q, X..Feml.Execs) ) +
   geom_point()
 ```
 
+
+\newpage
+### ROC (Return on Capital) and Q Score
+Below shows Q score against ROC (return on capital), subsetted to remove extreme values in both variables. Thus, below is a representation of the main cluster in the data. 
+
+Looks to be a positive relationship between the two. Interesting, since ROC (may be) considered a bad strategy in the long term for companies (requires further investigation).
+
+```{r, warning=FALSE}
+ggplot(data=subset(spx_EDA, !is.na(ROC) & ROC<30 & ROC>0 & Tobin.s.Q < 5),
+  aes(ROC, Tobin.s.Q )) +
+  geom_point() +
+  ggtitle("ROC and Tobins Q") +
+  geom_smooth(method = "lm") 
+```
+
+
+\newpage
+### Independant Directors and Q Score
+According to M&M;
+
+> ...while an independent lead director and a financial leverage higher than 2.5 generates a higher risk of bankruptcy.
+
+Plot below seems to support this, is it strong enough though? R squared value likely to be pretty small when a proper regression is done. 
+
+```{r, warning=FALSE}
+ggplot(data=subset(spx_EDA, !is.na(Indep.Directors)),
+  aes(Indep.Directors, Tobin.s.Q )) +
+  geom_point() +
+  ggtitle("Indep.Directors and Tobins Q") +
+  geom_smooth(method = "lm")
+```
+
+
+
+
+\newpage
 # STOXX® Europe 600
 
 # STOXX Eastern Europe 300
