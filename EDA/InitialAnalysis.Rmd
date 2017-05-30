@@ -15,6 +15,11 @@ library(stringr)
 library(rpart)
 library(lattice)
 library(ggplot2)
+vars = c("Ticker", "Tobin.s.Q", "AZS", "P.E", "EPS", "P.B", "P.EBITDA", 
+                "Board.Size", "CEO.Duality", "X..Feml.Execs", 
+                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..", 
+                "Asset", "Interest", "Tax", "ROE", "ROC",
+                "Indep.Directors", "X..Indep.Dir.on.Aud.Cmte", "X..Indep.Dir.on.Aud.Cmte.1", "Sz.Aud.Cmte")
 ```
 
 
@@ -24,12 +29,16 @@ The S&P 500 is an American stock market index including market capitalization of
 
 Read in full data as below, and carry out some sub-setting. Set NA values. 
 ```{r}
-spx_EDA = spx[c("Ticker", "Tobin.s.Q", "P.E", "EPS", "P.B", "P.EBITDA", 
-                "Board.Size", "CEO.Duality", "X..Feml.Execs", 
-                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..", 
-                "Asset", "Interest", "Tax", "ROE", "ROC",
-                "Indep.Directors")]
+spx_EDA = spx[vars]
 spx_EDA[ spx_EDA == "#N/A Field Not Applicable" ] <- NA
+```
+
+Create categorical variable for Q and Z score, as per MM.
+```{r}
+m_TQ = median(subset(spx_EDA$Tobin.s.Q, !is.na(spx_EDA$Tobin.s.Q)))
+m_AZ = median(subset(spx_EDA$AZS, !is.na(spx_EDA$AZS)))
+spx_EDA$Tobin.s.Q.class = with(spx_EDA, ifelse(Tobin.s.Q >= m_TQ, 1, 2))
+spx_EDA$AZS.class = with(spx_EDA, ifelse(AZS >= m_AZ, 1, 2))
 ```
 
 View data types. Convert to numeric columns that need to be numeric. Parse out the actual ticker string (output hidden for clarity).
@@ -40,28 +49,76 @@ spx_EDA[cols.num] <- sapply(spx_EDA[cols.num],as.numeric)
 sapply(spx_EDA, class)
 spx_EDA$TickerID = str_split_fixed(spx_EDA$Ticker, " ", 2)[,1] #parse the ticker itself
 ```
+
 \newpage
 ## Missing Data
-Cases with missing values. Seems high (73 / 500 = 14.6% loss if we discount them). 
+Cases with missing values. Very high (254 / 500 = 50.8% loss if we discount them). 
 ```{r}
 sum(!complete.cases(spx_EDA))
 ```
+81 NA's for Altman Z score, (81 / 500 = 16.2%). 
 ```{r}
 summary(spx_EDA)
 ```
+\newpage
+## Altman Z Score
+Histogram of the Altman Z Score over the data. Looks to be a pretty normal distribution, albeit with some extreme outliers on either tail.
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data=spx_EDA) +
+  geom_histogram( aes(AZS, ..density..), bins=40 ) +
+  geom_density( aes(AZS, ..density..) ) +
+  geom_rug( aes(AZS) ) +
+  geom_vline(aes(xintercept=mean(AZS, na.rm=T)),  # red line is the mean
+               color="red", linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=median(AZS, na.rm=T)),  # blue line is the median
+               color="blue", linetype="dashed", size=1) +
+  ggtitle("AZS Histogram")
+```
+
+\newpage
+### Independant Directors and ALtman Z score
+According to M&M;
+
+> ...while an independent lead director and a financial leverage higher than 2.5 generates a higher risk of bankruptcy.
+
+Risk of bankruptcy is measured by the Z score.
+
+Plot below seems to support this, is it strong enough though? R squared value likely to be pretty small when a proper regression is done. 
+
+```{r, warning=FALSE}
+ggplot(data=subset(spx_EDA, !is.na(Indep.Directors)),
+  aes(Indep.Directors, AZS )) +
+  geom_point() +
+  ggtitle("Indep.Directors and Altman Z score") +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+table(spx_EDA$AZS.class)
+```
+
+
+Using the class variable for Z score. Not a significant relationship.
+```{r, warning=FALSE}
+boxplot(Indep.Directors~AZS.class,data=spx_EDA, main="Altman Z and Number of Indep Directors", 
+        xlab="Altman Z Score class", ylab="Independant Directors")
+```
+
+
+
 
 
 
 \newpage
 ## Tobins Q
-Histogram of Tobins Q over the entire dataset. Heavily skewed right, most companies have low scores. It is going to be difficult to learn rules for high performing companies? 
+Histogram of Tobins Q over the data. Heavily skewed right, most companies have low scores. It is going to be difficult to learn rules for high performing companies? 
 From M&M:
 
 > As suggested by Creamer [14], we discretized Tobin’s Q ratio in order to obtain two classes, dividing each dataset according to its median value. In this way, a company that lies in the upper side of the median will be looked positively by the machine learning algorithms.
 
 Median (blue) and mean (red) of Q score is shown below. Regression may not be suitable for data that has such a skewness. 
 ```{r, message=FALSE, warning=FALSE}
-#distrib
 ggplot(data=spx_EDA) +
   geom_histogram( aes(Tobin.s.Q, ..density..), bins=40 ) +
   geom_density( aes(Tobin.s.Q, ..density..) ) +
@@ -91,6 +148,7 @@ Poisson regression could be a good alternative to having to process the Q score 
 See https://en.wikipedia.org/wiki/Poisson_distribution 
 
 I don't think this it actually does, but Poisson regression may be more applicable here that OLS for example.
+
 \newpage
 
 ### P.B (price to book ratio) and Q Score
@@ -110,7 +168,9 @@ Same as previous page, but showing the tickers for each data point. VRTX is a pa
 #with labels
  ggplot(spx_EDA, aes(P.B, Tobin.s.Q) ) +
     geom_point() +
-    geom_text(aes(label=ifelse(P.B>100 & P.B<200 & Tobin.s.Q>5,as.character(TickerID),'')),hjust=1.2, vjust=1)+
+    geom_text(aes(label=ifelse(P.B>100 & P.B<200 & 
+                                 Tobin.s.Q>5,as.character(TickerID),'')),
+                                  hjust=1.2, vjust=1)+
   ggtitle("Price to Book Ratio Vs. Tobins Q with Data Labels")
 ```
 
@@ -168,27 +228,57 @@ ggplot(data=subset(spx_EDA, !is.na(ROC) & ROC<30 & ROC>0 & Tobin.s.Q < 5),
 ```
 
 
-\newpage
-### Independant Directors and Q Score
-According to M&M;
-
-> ...while an independent lead director and a financial leverage higher than 2.5 generates a higher risk of bankruptcy.
-
-Plot below seems to support this, is it strong enough though? R squared value likely to be pretty small when a proper regression is done. 
-
-```{r, warning=FALSE}
-ggplot(data=subset(spx_EDA, !is.na(Indep.Directors)),
-  aes(Indep.Directors, Tobin.s.Q )) +
-  geom_point() +
-  ggtitle("Indep.Directors and Tobins Q") +
-  geom_smooth(method = "lm")
-```
 
 
 
 
 \newpage
 # STOXX® Europe 600
+```{r, echo=FALSE, warning=FALSE}
+setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
+sxxp=read.csv("sxxp.csv", sep=",", na.strings="#N/A N/A") 
+``` 
+
+```{r}
+sxxp_EDA = sxxp[vars]
+sxxp_EDA[ sxxp_EDA == "#N/A Field Not Applicable" ] <- NA
+summary(sxxp_EDA)
+```
+
+### Audit committee and Altman Z Score
+
+According to M&M:
+
+> ...while in Western Europe that it is better to employ a larger audit committee in order to lower the bankruptcy risk
+
+Again, result below doesnt look all that convincing but further analysis required. 
+
+```{r, warning=FALSE}
+ggplot(data=sxxp_EDA, 
+  aes(AZS, Sz.Aud.Cmte )) +
+  geom_point() +
+  ggtitle("Audit Committee Size and Altman Z score") +
+  geom_smooth(method = "lm")
+```
+
+\newpage
+### Indep.Director / Former CEO and Tobin Q
+
+According to M&M;
+
+> For the Western European companies, the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobin’s Q
+
+Results below (take out one outlier, whose Q score is huge) seem to support this. Again, r score likely to be pretty low based on how distributed the data points are.
+ 
+```{r, warning=FALSE}
+ggplot(data=subset(sxxp_EDA, Tobin.s.Q<30 ), 
+  aes(Indep.Directors, Tobin.s.Q )) +
+  geom_point() +
+  ggtitle("Indep Directors  and Altman Z score") +
+  geom_smooth(method = "lm")
+```
+
+
 
 # STOXX Eastern Europe 300
 
