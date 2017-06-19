@@ -17,9 +17,11 @@ library(lattice)
 library(ggplot2)
 vars = c("Ticker", "Tobin.s.Q", "AZS", "P.E", "EPS", "P.B", "P.EBITDA", 
                 "Board.Size", "CEO.Duality", "X..Feml.Execs", 
-                "X..Feml.Execs.1", "Bd.Avg.Age", "Board.Mtg.Att..", 
+                "X..Feml.Execs.1", "X..Wmn.on.Bd","X..Women.on.Bd", 
+                "Bd.Avg.Age", "Board.Mtg.Att..", 
                 "Asset", "Interest", "Tax", "ROE", "ROC",
-                "Indep.Directors", "X..Indep.Dir.on.Aud.Cmte", "X..Indep.Dir.on.Aud.Cmte.1", "Sz.Aud.Cmte")
+                "Indep.Directors", "X..Indep.Dir.on.Aud.Cmte", 
+                "X..Indep.Dir.on.Aud.Cmte.1", "Sz.Aud.Cmte", "Indep.Chrprsn")
 ```
 
 
@@ -203,6 +205,10 @@ Tobins Q and the number of female executives. Seems to cluster around the bottom
 
 According to M&M:
 
+> For the US components, we found a positive connection between the presence of women in the board and the company perfor- mance
+ 
+and 
+
 > Tobin’s Q ratio is positively influenced by the percentage women in the board
 
 May need to look into this further.
@@ -212,6 +218,30 @@ ggplot(spx_EDA, aes(Tobin.s.Q, X..Feml.Execs) ) +
   geom_point()
 ```
 
+Try a boxplot with Tobins Q as a class instead of a continuous variable.
+```{r}
+boxplot(X..Feml.Execs~Tobin.s.Q.class,data=spx_EDA, main="Female Execs vs Tobins Q", 
+        xlab="Tobins Q (Class)", ylab="Female Execs(%)")
+```
+Again, doesnt seem to have much influence.
+
+Try with percentage of women on the board vs Tobins as a class.
+```{r}
+boxplot(X..Women.on.Bd~Tobin.s.Q.class,data=spx_EDA, main="Female on Board(%) vs Tobins Q", 
+        xlab="Tobins Q (Class)", ylab="Female on board (%)")
+```
+
+Still nothing really. 
+
+Try with percentage of women on the board vs Tobins as a continuous variable.
+```{r, warning=FALSE}
+#female presence on board and success?
+ggplot(spx_EDA, aes(Tobin.s.Q, X..Women.on.Bd) ) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+Makes literally no difference it seems.
 
 \newpage
 ### ROC (Return on Capital) and Q Score
@@ -242,7 +272,9 @@ sxxp=read.csv("sxxp.csv", sep=",", na.strings="#N/A N/A")
 ```{r}
 sxxp_EDA = sxxp[vars]
 sxxp_EDA[ sxxp_EDA == "#N/A Field Not Applicable" ] <- NA
+sxxp_EDA$AZS.class = with(sxxp_EDA, ifelse(AZS >= m_AZ, 1, 2))
 summary(sxxp_EDA)
+
 ```
 
 ### Audit committee and Altman Z Score
@@ -271,15 +303,65 @@ According to M&M;
 Results below (take out one outlier, whose Q score is huge) seem to support this. Again, r score likely to be pretty low based on how distributed the data points are.
  
 ```{r, warning=FALSE}
-ggplot(data=subset(sxxp_EDA, Tobin.s.Q<30 ), 
+ggplot(data=subset(sxxp_EDA, AZS<30 ), 
   aes(Indep.Directors, Tobin.s.Q )) +
   geom_point() +
-  ggtitle("Indep Directors  and Altman Z score") +
+  ggtitle("Indep Directors  and Tobins Q") +
   geom_smooth(method = "lm")
 ```
 
+Try with AZS
 
+```{r, warning=FALSE}
+ggplot(data=sxxp_EDA, 
+  aes(Indep.Directors, AZS )) +
+  geom_point() +
+  ggtitle("Indep Directors  and AZS") +
+  geom_smooth(method = "lm")
+```
+
+Similar result.
+
+Try with AZS class.
+```{r, warning=FALSE}
+boxplot(Indep.Directors~AZS.class,data=sxxp_EDA, main="Altman Z and Number of Indep Directors", 
+        xlab="Altman Z Score class", ylab="Independant Directors")
+```
+
+Bit of a difference?
 
 # STOXX Eastern Europe 300
+
+```{r, echo=FALSE, warning=FALSE}
+setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
+eebp=read.csv("eebp.csv", sep=",", na.strings="#N/A N/A") 
+``` 
+
+```{r}
+eebp_EDA = sxxp[vars]
+eebp_EDA[ eebp_EDA == "#N/A Field Not Applicable" ] <- NA
+eebp_EDA$AZS.class = with(eebp_EDA, ifelse(AZS >= m_AZ, 1, 2))
+summary(eebp_EDA)
+```
+
+For Eastern Europe, M&M state that
+
+> An independent chair- person is a positive factor related to Altman Z-score, for the companies from Eastern Europe.
+
+Lets see. Try with continuous AZS first. Remove one very outlying AZS.
+```{r, warning=FALSE}
+ggplot(data=subset(eebp_EDA, !is.na(Indep.Chrprsn) & AZS<40),   
+  aes(Indep.Chrprsn, AZS )) +
+  geom_point() +
+  ggtitle("Indep Chairperson  and AZS") +
+  geom_boxplot()
+```
+
+Doesnt seem like much there.
+
+Look at a table with AZS as a class?
+```{r, warning=FALSE}
+table(eebp_EDA$Indep.Chrprsn, eebp_EDA$AZS.class)
+```
 
 
