@@ -7,6 +7,7 @@ setwd("/Users/Conor/Google Drive/MSc/dissertation/data/processed")
 
 #american 500
 spx=read.csv("spx.csv", sep=",", na.strings="#N/A N/A") 
+View(spx)
 spx$TickerID = str_split_fixed(spx$Ticker, " ", 2)[,1]
 summary(spx$Tobin.s.Q)
 

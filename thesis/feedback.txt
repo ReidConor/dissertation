@@ -1,0 +1,67 @@
+Hi Conor -- feedback on the skeleton document.
+
+Overall, this is excellent. Plenty of detail and insight. It's clear
+you've already made a lot of progress. Some parts will need a little
+cleaning up but that is no problem at this stage. I'll note a few
+small comments below, for discussion after the exams.
+
+Grade: A.
+
+
+"the exploration of causal research" -> causality research
+
+"It has been demonstrated to be quite reliable in a variety of
+contexts and countries." -> probably should be quoted inline rather
+than a block quote
+
+"Figure 2.1: Correlation between corporate environmental protection
+spending and economic success." -- put the image source in the
+caption.
+
+”the responsibility of enterprises for their impacts on society” --
+here and elsewhere, you need to use latex-style quotes, that is double
+backticks (``) followed by double apostrophes ('').
+
+"For example, the study of Moldovan and Mutu (2015) on which the
+current study is based, makes strong claims as to the relationship
+between corporate governance and company success." -- here, I would
+quote something from their conclusions where they suggest that firms
+could improve their Z score if they made some specific change.
+
+"It is said that if all variables that could possibly be causal are
+considered, causation can be reliably inferred." -- I don't quite get
+this comment and "it is said" needs to be backed up.
+
+"Researchers can then estimate the presence and magnitude of the
+effect the treatment has on particular outcomes." -- I would add a
+sentence here to make it crystal-clear: any observed relationship can
+then be inferred to be causal since the treatment variable was under
+researcher control.
+
+"A way to address this is to categorise continuous features, a
+practice used in calculating the Mahalanobis distance for example
+which works well with low dimensionality, but poorly with highly
+non-uniformly distributed features." -- I'm not familiar with this --
+I think of Mahalanobis as working on continuous features -- so just
+flagging it for future discussion. (Or maybe you have a cite.)
+
+I suggest a find-replace on your .tex for "casual" -> "causal" ;-)
+
+How does the DAG model of Pearl hold up when we think about variables
+which are in a circular i.e. feedback relationship, e.g. sales go up
+-> more money available to spend on advertising -> causes sales to go
+up? Pearl has talked a bit about this. I think you don't need to go
+into it, but suggest add a few sentences saying that it is possible,
+but more complicated, and not necessary for our project.
+
+
+More broadly, I think there is another approach which is analogous to
+Matching, that is a before-and-after matching on the *same* data
+point. Eg if you could get the Altman Z for each company before and
+after each change to its governance (how far before and after?
+difficult question) you would in a sense have a matched dataset.
+Again, just something to mention. Might not be needed for us.
+
+Attached algorithm to make this happen - see forked project at https://github.com/ReidConor/causality
+
+Great find. Nice that it uses NetworkX too!
