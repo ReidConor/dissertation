@@ -35,12 +35,43 @@ eebp(){
 
 spx(){
   echo "  Cleaning spx."
+  cd "$dataDir"/raw
+  cp spx_091214.xlsx "$dataDir"/processing
+
+  cd "$dataDir"/processing
+  ssconvert spx_091214.xlsx spx.csv
+  rm spx_091214.xlsx
+  sed -i '' 's/#N\/A\ N\/A//g' spx.csv
+  sed -i '' 's/,/;/g' spx.csv
+
+  cd "$jobDir"
+  python replaceBlanks.py "$dataDir"/processing/spx.csv "$dataDir"/processing/spxNoBlanks.csv
+
+  cd "$dataDir"/processing
+  rm spx.csv; mv spxNoBlanks.csv spx.csv
+  mv spx.csv "$dataDir"/clean
   echo "  Cleaned."
 
 }
 
 sxxp(){
   echo "  Cleaning sxxp."
+  cd "$dataDir"/raw
+  cp sxxp_091214.xlsx "$dataDir"/processing
+
+  cd "$dataDir"/processing
+  ssconvert sxxp_091214.xlsx sxxp.csv
+  rm sxxp_091214.xlsx
+  sed -i '' 's/#N\/A\ N\/A//g' sxxp.csv
+  sed -i '' 's/#N\/A\ Field\ Not\ Applicable//g' sxxp.csv
+  sed -i '' 's/,/;/g' sxxp.csv
+
+  cd "$jobDir"
+  python replaceBlanks.py "$dataDir"/processing/sxxp.csv "$dataDir"/processing/sxxpNoBlanks.csv
+
+  cd "$dataDir"/processing
+  rm sxxp.csv; mv sxxpNoBlanks.csv sxxp.csv
+  mv sxxp.csv "$dataDir"/clean
   echo "  Cleaned."
 
 }

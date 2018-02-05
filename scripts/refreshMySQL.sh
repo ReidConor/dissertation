@@ -47,8 +47,9 @@ load(){
     --ignore-lines=1 \
     --fields-terminated-by=';' \
     --fields-enclosed-by='"' \
+    --lines-terminated-by='\r\n' \
     corp_gov \
-    eebp.csv
+    $1
 
   echo "Loaded."
 }
@@ -58,7 +59,9 @@ main(){
   clear
   ddl
   cleanData
-  load
+  load eebp.csv
+  load spx.csv
+  load sxxp.csv
 
 }
 main
