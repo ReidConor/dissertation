@@ -1,0 +1,42 @@
+Summary
+*****************
+http://timesleuth-rule.sourceforge.net
+used for generating temporal rules from sequential data
+implements the TIMERS algo and can judge the causality or acausality (think this means not causal) of the rules it generates
+
+
+High-Level Details
+*****************
+allows C4.5 to understand the progression of time among variables
+judges the causality or acausality of temporal relations 
+unsupervised investigation of relationships among attributes
+converts decisions rules into Prolog statements
+screens output rule based on confidence level 
+tabular presentation of the output for analysis 
+acts as a gui for C4.5 
+for details see https://arxiv.org/ftp/arxiv/papers/1004/1004.3334.pdf
+
+
+More Detail
+*****************
+used for learning rules form observed data 
+test the causality of the rules
+data mining (human interpreted) as well as machine learning (use automatically) tool
+output Prolog statements (1)
+built on top of C4.5 (which is used in MM study)
+time here can flow forward or backwards, facilitating the user to investigate the nature of relationships among variables
+
+
+
+
+
+
+
+1. Prolog
+*****************
+stands for Programming in Logic
+its a language well suited to logic and AI programming
+http://www.mind.ilstu.edu/curriculum/protothinker/prolog_intro.php
+input is something like father(peter, conor) -> Peter is the father of Conor
+then at prompt -> father(peter, conor) results in “yes/true”
+rules based system

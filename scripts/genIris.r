@@ -1,0 +1,7 @@
+library(datasets)
+library(RMySQL)
+library(adabag)
+data(iris)
+mydb = dbConnect(MySQL(), user='root', password='', dbname='corp_gov')
+dbListTables(mydb)
+dbWriteTable(mydb, value=iris, name="iris", overwrite= TRUE)

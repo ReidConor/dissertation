@@ -1,0 +1,99 @@
+Summary
+*****************
+Its an open source java implementation of the C4.5 decision tree algo
+
+
+…C4.5 algo then
+Summary
+*****************
+used to generate a decision tree developed by Ross Quinlan
+its an extension of the ID3 algo(1)
+can be used for classification, and is referred to then as a statistical classifier
+apparently its “a landmark decision tree program that is probably the machine learning workhorse most widely used in practice today” [https://www.cs.waikato.ac.nz/~ml/weka/book.html]
+
+
+Details
+*****************
+builds decision trees from a set of training data in the same way as ID3 using the concept of information entropy(2). 
+training data is a set of already labeled samples
+at each node of the tree, C4.5 chooses the attribute of the data that most effectively splits its set of samples into subsets enriched in one class or the other
+the splitting criterion is the normalised information gain (i.e. the difference in entropy)
+the attribute with the highest normalised information gain is picked to make the decision 
+recur on the smaller sublists
+
+
+Improvements made over ID3
+*****************
+handles both continuous and discrete attributes. to handle continuous, this algo creates a single threshold resulting in a two class discrete attribute 
+handles training data with missing attribute values
+pruning trees after creation. goes back over the tree once its been created and attempts to replace unhelpful branches with leaf nodes
+
+
+C5.0
+*****************
+an improvement again on C4.5
+quicker by several orders of magnitude
+better memory usage
+smaller decision trees
+allows for boosting
+wighting. you can weight different cases and misclassification types [does this mean I can say that saying a company is good and its actually bad is far less desirable than the other way around and have that influence the results?]
+winnowing. algo for learning a linear classifier [unsure about this, look into again..]
+
+
+TimeSleuth
+*****************
+uses C4.5
+used for generating temporal rules from sequential data
+implements the TIMERS algorithm, and can judge the causality or acausality of the rules it generates.
+breaking into its own section since it seems very important….
+
+
+Implementation
+*****************
+[C5.0] https://cran.r-project.org/web/packages/C50/C50.pdf
+[weka j48] http://docs.ochem.eu/pages/viewpage.action?pageId=7013031
+[weka in R] https://cran.r-project.org/web/packages/RWeka/index.html
+
+
+
+
+
+
+
+
+Footnotes
+*****************
+1. ID3 Algo
+****
+invented by the same guy
+generates a decision tree from a dataset
+begins with the original set S as the root node. iterates through each unused attributes of the set of S and calculates the entropy of that attribute. selects the attribute with the smallest entropy (or largest info gain) to split on to create subsets of the data. stops according to a few cases. 
+	all elements belong to the same class
+	no more attributes to be selected to split on 
+	no examples in the subset
+doesn’t guarantee an optimal solution, can get stuck in local optima
+greedy algo 
+can overfit to the training data. to combat, use smaller trees
+hard to use on continuous data, time consuming
+
+
+2. Information Entropy
+****
+https://simple.wikipedia.org/wiki/Information_entropy
+tells how much information there is in an event
+the more uncertain or random the event is, the more info it will contain
+information is a decrease in uncertain or  entropy
+the information gain is a measure of the probability with which a certain result is expected to happen 
+think of a coin flip. the odds are 50/50, the entropy is its max value which is 1. if we had a two sided coin the odds are 100/0, and the entropy is min which is 0. 
+
+
+3. Weka Data Mining Tool
+****
+https://www.cs.waikato.ac.nz/ml/weka/
+a collection of machine learning algorithms for data mining tasks
+applied directly to data or from java code
+tools for data pre-processing, classification, regression, clustering, association rules and data vis
+its a gui 
+
+
+

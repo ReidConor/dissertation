@@ -1,0 +1,55 @@
+Summary
+*****************
+https://en.wikipedia.org/wiki/AdaBoost
+short for Adaptive Boosting - its classification
+can be used on conjunction with others
+the output of the other learning algorithms or weak learners, is combined into a weighted sum that represents the final output of the boosted classifier
+individual learners are weak, but as long as each is slightly better than random guessing then the final solution is a stronger learner
+sensitive to noisy data and outliers
+often use decision trees as the weak learners
+
+
+
+OverView
+*****************
+remember the curse of dimensionality - too many slows performance but also reduces predictive power
+adaboost only picks those features known to improve the predictive power of the model (unlike NN or SVMs)
+reduces dimensionally and thus potentially improves execution times 
+each weak learner produces an output hypothesis for each sample in the training set. 
+at each iteration, a weak learner is selected and assigned a coefficient such that the sum training error of the resulting t-stage boost classifier is minimised. 
+each each iteration of the training process, a weight is assigned to each sample in the training set equal to the current error on that sample. 
+these weights can be used to inform the training of the weak learner 
+for example, decision trees can be grown that favour splitting sets of samples with high weights (so its splits instances with high errors thus reducing that error?) 
+
+
+
+Experiments with a New Boosting Algorithm - Yoav Freund / Robert E. Schapire
+*****************
+previously introduced a new boosting algorithm called adaboost
+here, they describe experiments they carried out to assess how well adaboost performs with and without pseudo-loss
+“we describe two versions of the algorithm, which we denote Adaboost.M1 and Adaboost.M2. the two versions are equivalent for binary classification problems and differ only in their handling of problems with more than two classes”
+adaboost.M1 is a simpler version
+has access to some other unspecified learning algorithm, called the weak learning algorithm [weaklearn]
+the boosting algorithm calls weaklearn repeatedly in a series of rounds 
+the goal of weaklearn is to compute a hypothesis which should misclassify a non trivial fraction of the training examples. that is, it should find a hypothesis which minimises the training error  
+combines to form a strong hypothesis
+
+
+
+Implementation
+*****************
+Python
+https://medium.com/@univprofblog1/adaptive-boosting-adaboost-classification-matlab-r-and-python-codes-all-you-have-to-do-is-just-c2b599643d7e
+https://gist.github.com/tristanwietsma/5486024
+
+
+R
+https://www.rdocumentation.org/packages/adabag/versions/4.2/topics/boosting
+https://cran.r-project.org/web/packages/adabag/adabag.pdf
+
+….kinda seems like R is the way to go. can you call R in python?
+….yes, probs don’t need to
+https://www.r-bloggers.com/accessing-mysql-through-r/ to connect to mysql in R
+
+
+
