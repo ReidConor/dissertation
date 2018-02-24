@@ -1,0 +1,13 @@
+Summary
+*****************
+see https://github.com/akelleh/causality
+allows for causal analysis using observational data (rather than experimental) 
+
+
+Details
+*****************
+use the CausalDataFrame object (which is an extension of a pandas DataFrame)
+two methods; 
+	first is the zmean method. this allows you to control for a set of variables, z, when you’re trying to esteem the effect of a discrete variable x on a continuous variable y. supports both returning the y estimates as each x, as well as providing bootstrap error bars.
+	second is plotting to show the effect of discrete or continuous x on continuous y while controlling for z. this is done using the zplot method.
+only algorithm currently implemented is IC* by Pearl (2000) [this is in my lit review]

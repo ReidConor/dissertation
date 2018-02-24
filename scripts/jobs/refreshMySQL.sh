@@ -6,7 +6,7 @@
 #/ Create date : 20-01-2018
 #/
 export jobDir=`pwd`
-export dissertationDir=`cd "$jobDir"; cd ../; pwd`
+export dissertationDir=`cd "$jobDir"; cd ../../; pwd`
 export dataDir=`cd "$dissertationDir"/data/; pwd;`
 
 errorCheck(){

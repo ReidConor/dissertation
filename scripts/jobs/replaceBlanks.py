@@ -1,6 +1,6 @@
 import csv,sys
-fin = open(sys.argv[1],'rb')
-fout = open(sys.argv[2],'wb')
+fin = open(sys.argv[1])
+fout = open(sys.argv[2],'w')
 reader = csv.reader(fin, delimiter=';', quotechar='"')
 writer = csv.writer(fout, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 for row in reader:

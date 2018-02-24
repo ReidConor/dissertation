@@ -1,0 +1,5 @@
+20:22
+goal is to get out historical data on all s&p companies, relating to as many features as possible
+to load all 500 - go to excel, spreadsheet builder, historical data. then expand Equity Index, and SPX. Use shift and select all companies there. or double click spx and it loads them all
+major note…the companies in the s&p500 change every year, probs the same for the other indexes too. can i use similar data to M&M but not identical? surely should use the top 500 companies currently not those used in the original study?
+How do I want my data to look (considering years)? Have yearly tables, so spx_2014 spx_2015 etc then join as necessary. 
