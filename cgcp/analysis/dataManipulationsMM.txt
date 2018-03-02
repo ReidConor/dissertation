@@ -1,0 +1,26 @@
+Notes on the method used by M&M
+---
+
+two dependent variables, tobins Q ratio and the altman z score
+three stock indexes, s&p 500, stoxx europe 600 and stoxx eastern europe 300
+
+during preprocessing, they removed all records where there were missing values on the attribute of the dependent variables or did not have enough information to calculate their values. 
+also removed outliers to eliminate possible data errors
+
+they discretised q score to get two classes based on median value
+
+divide altman z into three classes, according to definitions provided by altman himself. 
+	[for spx and sxxp]
+	above 2.99 = safe
+	below 2.99, above 1.81 = grey 
+	below 1.81 = distress 
+	
+	[for emerging markets]
+	above 2.6 = safe
+	below 2.6, above 1.1 = grey 
+	below 1.1 = distress
+
+resulted in 
+	spx - 496 	[down from 500, 99.2%] 
+	sxxp - 595	[down from 600, 99.1%]
+	eebp - 297 	[down from 300, 99%]
