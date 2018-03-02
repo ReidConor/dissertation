@@ -1,61 +1,87 @@
 #!/usr/bin/env Rscript
 #get data
 library(RMySQL)
+library(adabag)
+library(pROC)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
 eebp <- dbReadTable(conn=mydb,name='eebp')
 
-#lets start with spx
-library(adabag)
-drops <- c("Ticker",
-           "AZS.class",
-           "Tobins.Q",
-           "AZS")
-spx.reduced<-spx[ , !(names(spx) %in% drops)] #remove unwanted columns
-spx.reduced<-spx.reduced[complete.cases(spx.reduced[ , "Tobins.Q.class"]),]# we only want records with a class indicator
-spx.reduced$Tobins.Q.class=as.factor(spx.reduced$Tobins.Q.class)
-spx.reduced$Feml.CEO.or.Equiv=as.numeric(as.factor(spx.reduced$Feml.CEO.or.Equiv))
-len <- length(spx.reduced[,1])
-sub <- sample(1:l,2*l/3)#get 2/3rds of the records
-mfinal <- 100 #default is 100
-maxdepth <- 30 #30 is max
-spx.adaboost <- boosting(Tobins.Q.class~., 
-                         data=spx.reduced[sub, ], 
-                         boos=TRUE, 
-                         mfinal=mfinal,
-                         coeflearn="Zhu"
-                         ,control=rpart.control(maxdepth=maxdepth) #not sure i need this 
-                         )
-spx.adaboost.pred <- predict.boosting(spx.adaboost,newdata=spx.reduced[-sub, ])
-spx.adaboost.pred$confusion
-spx.adaboost.pred$error
-errorevol(spx.adaboost,newdata=spx.reduced[sub, ])->evol.train
-errorevol(spx.adaboost,newdata=spx.reduced[-sub, ])->evol.test
-plot.errorevol(evol.test,evol.train)
 
+adaboost <- function(dataset) {
+  drops <- c("Ticker",
+             "AZS.class",
+             "Tobins.Q",
+             "AZS")
+  data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
+  data.reduced<-data.reduced[complete.cases(data.reduced[ , "Tobins.Q.class"]),]# we only want records with a class indicator
+  data.reduced$Tobins.Q.class=as.factor(data.reduced$Tobins.Q.class)
+  data.reduced$Feml.CEO.or.Equiv=as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  data.reduced$Prsdg.Dir=as.numeric(as.factor(data.reduced$Prsdg.Dir))
+  data.reduced$Clssfd.Bd.Sys=as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
+  data.reduced$Indep.Lead.Dir=as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
+  data.reduced$CEO.Duality=as.numeric(as.factor(data.reduced$CEO.Duality))
+  data.reduced$Indep.Chrprsn=as.numeric(as.factor(data.reduced$Indep.Chrprsn))
+  
+  
+  len <- length(data.reduced[,1])
+  sub <- sample(1:len,2*len/3)#get 2/3rds of the records
+  mfinal <- 100 #default is 100
+  maxdepth <- 30 #30 is max
+  data.adaboost <- boosting(Tobins.Q.class~., 
+                           data=data.reduced[sub, ], 
+                           boos=TRUE, 
+                           mfinal=mfinal,
+                           coeflearn="Zhu"
+                           ,control=rpart.control(maxdepth=maxdepth) #not sure i need this 
+  )
+  data.adaboost.pred <- predict.boosting(data.adaboost,newdata=data.reduced[-sub, ])
+  errorevol(data.adaboost,newdata=data.reduced[sub, ])->evol.train
+  errorevol(data.adaboost,newdata=data.reduced[-sub, ])->evol.test
+  
+  trueNegative<-data.adaboost.pred$confusion[1]   
+  falsePositive<-data.adaboost.pred$confusion[2]
+  falseNegative<-data.adaboost.pred$confusion[3] 
+  truePositive<-data.adaboost.pred$confusion[4] 
+  
+  # > precision
+  data_precision_class0=trueNegative/(trueNegative + falseNegative)
+  data_precision_class1=truePositive/(truePositive + falsePositive)
+  
+  # > recall
+  data_recall=truePositive/(truePositive + falseNegative)
+  
+  # > ROC and AUC
+  roc_obj <- roc(data.reduced[-sub,]$Tobins.Q.class, as.numeric(data.adaboost.pred$class))
+  
+  result=list(
+     "confusion"=data.adaboost.pred$confusion,
+     "error"=data.adaboost.pred$error,
+     "evol.train"=evol.train,
+     "evol.test"=evol.test,
+     "trueNegative"=trueNegative,
+     "falsePositive"=falsePositive,
+     "falseNegative"=falseNegative,
+     "truePositive"=truePositive,
+     "precision_class0"=data_precision_class0,
+     "precision_class1"=data_precision_class1,
+     "recall"=data_recall,
+     "roc_obj"=roc_obj
+  )
+  return(result)  
+}
 
-#***********
-#evaluate
-#***********
-# > confusion matrix
-trueNegative<-spx.adaboost.pred$confusion[1]   
-falsePositive<-spx.adaboost.pred$confusion[2]
-falseNegative<-spx.adaboost.pred$confusion[3] 
-truePositive<-spx.adaboost.pred$confusion[4] 
+#call the function on each
+spx_results=adaboost(spx)
+sxxp_results=adaboost(sxxp)
+eebp_results=adaboost(eebp)
 
-# > precision
-spx_precision_class0=trueNegative/(trueNegative + falseNegative)
-spx_precision_class1=truePositive/(truePositive + falsePositive)
-spx_precision_class0
-spx_precision_class1
+#analyze the results
+auc(spx_results$roc_obj)
+auc(sxxp_results$roc_obj)
+auc(eebp_results$roc_obj)
 
-# > recall
-spx_recall=truePositive/(truePositive + falseNegative)
-spx_recall
-
-# > ROC and AUC
-library(pROC)
-roc_obj <- roc(spx.reduced[-sub,]$Tobins.Q.class, as.numeric(spx.adaboost.pred$class))
-auc(roc_obj)
-
+plot.errorevol(spx_results$evol.test,spx_results$evol.train)
+plot.errorevol(sxxp_results$evol.test,sxxp_results$evol.train)
+plot.errorevol(eebp_results$evol.test,eebp_results$evol.train)
