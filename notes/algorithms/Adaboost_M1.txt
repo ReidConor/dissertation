@@ -51,5 +51,17 @@ https://cran.r-project.org/web/packages/adabag/adabag.pdf
 ….yes, probs don’t need to
 https://www.r-bloggers.com/accessing-mysql-through-r/ to connect to mysql in R
 
+The adabag package in R
+***
+Overall, implements the Adaboost.M1 algo based on Freund and Schaprie’s work (where the guys got it from). Uses classification trees as individual classifiers. Cross validation estimation of the error can be done too. 
+> autoprune: builds automatically a pruned tree of class part looking in the citable for the minimum cross validation error plus a standard deviation
+> bagging: fits the bagging algo proposed by Breiman in 1996 using classification trees as single classifiers. Using boosting, individual classifiers are independent among them in bagging.
+> bagging.cv: runs v-fold cross validation with bagging.
+
+
+
+
+
+
 
 

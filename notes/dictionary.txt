@@ -1,2 +1,3 @@
 Equity - 
 amortisation - the spreading of payments over multiple periods. can be of loans or of assets 
+cross-validation - sometimes called rotation estimation. its a model validation technique for assessing how the results of a statistical analysis will generalise to an independent data set.
