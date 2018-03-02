@@ -55,6 +55,14 @@ load(){
 }
 
 
+manipulations(){
+  cd "$jobDir"
+  ./dataManipulationsMM.R
+  errorCheck $?
+
+}
+
+
 main(){
   clear
   ddl
@@ -62,6 +70,7 @@ main(){
   load eebp.csv
   load spx.csv
   load sxxp.csv
+  manipulations
 
 }
 main
