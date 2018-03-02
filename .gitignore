@@ -1,4 +1,10 @@
+#folder stuff
 _depr/
+papers/
+data/
+
+#swp files
+*.swp
 
 #latex stuff
 *.aux
