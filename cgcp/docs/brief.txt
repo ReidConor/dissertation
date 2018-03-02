@@ -1,0 +1,40 @@
+The relationship between corporate governance and company performance: new factors, new models, new approaches to causality
+
+Proposed by: James McDermott and Miguel Nicolau
+
+Dissertation/Practicum: may be configured as either. Stretch goals would suit a Dissertation only.
+
+Corporate governance is a crucial issue for our times, as we increasingly see conflicts between shareholders’ interests and the public good, and between directors’ interests and shareholders’; and failures of corporate governance leading to disastrous consequences outside of companies themselves.
+
+Many different styles and features of corporate governance exist, and there has been much discussion on the consequences of these styles and features for corporate outcomes. In some cases this discussion is from first principles, and in others it is based on data.
+
+A principled approach to understanding the relationship between corporate governance and company performance would be a large contribution to the public good as well as to individual companies, since it could give us levers to effect positive change in governance and outcomes.
+
+One attempt at such an approach was made by Moldovan and Mutu (2015), henceforth MM (see also many citations therein). They gathered data on corporate governance and company outcomes from the Bloomberg financial information system. They then used data mining methods, such as decision trees and Adaboost, to learn models of outcomes based on governance features. Specifically they investigated two measures of company performance, the Altman Z-score and Tobin’s Q-ratio. Their models allowed them to predict, with some accuracy, company performance given only features of its governance structure. More importantly, they analysed their models to present simple if-then explanations, such as their claim that a high percentage of female members of the board of directors helps to improve outcomes for companies in the STOXX Eastern European 300 dataset.
+
+While this paper is a useful jumping-off point, there are several limitations. The goal of the proposed project is to improve on these. Specifically:
+
+	▪	The two measures of performance (Z and Q) may not fully capture company performance. In particular Q is a simple measure of stock price changes.
+	▪	Both measures are real-valued, but MM apply standard thresholds to produce discrete classes (i.e. “good performance” and “bad performance”), followed by a classification algorithm. A natural alternative would be a regression algorithm on the original real value.
+	▪	Further features, not investigated by MM, may be of interest.
+	▪	Although several models were investigated, some worthwhile alternatives (regularised logistic regression, the elastic net, kernel regression, neural networks) were not investigated.
+	▪	The paper suggests claims concerning causality, for example the claim concerning female directors above. The weakness is not that the claim is necessarily false: it is that correlation (linear and non-linear), does not provide evidence for causation. 
+
+The proposed project goals are as follows. 
+
+	▪	An initial goal is to acquire the dataset, whether by contacting MM or using Bloomberg terminals available in UCD Quinn and Smurfit, and reproduce some of MM’s results. 
+	▪	A central goal is to apply (regularised) regression, and classification-on-regression (i.e. thresholding on the real value predicted by regression) rather than straight classification, as the main analysis, and follow this with a careful discussion of the pros and cons, and the findings (e.g. correlation analysis, both linear and rank correlation). 
+	▪	A side goal is to consider alternative features and measures of performance, beyond Z and Q. 
+	▪	A stretch goal is to investigate modern work in causality (Pearl, 2009, King et al., 2016) and attempt to apply it here. Any contribution to the task of proving causality, as opposed to correlation, would be a large contribution.
+
+Benefit to students: experience with Bloomberg; practice with standard and advanced data mining algorithms; exposure to cutting-edge work on causality. Potential to publish as a conference or journal paper.
+
+Required skills: Python or R programming and data mining packages; ability to follow tutorials etc as needed to learn basics of Bloomberg/Excel interaction for accessing large datasets. Ability to read and critique research papers.
+
+Readings:
+
+Moldovan, Darie, and Simona Mutu. "Learning the Relationship between Corporate Governance and Company Performance using Data Mining." International Workshop on Machine Learning and Data Mining in Pattern Recognition. Springer International Publishing, 2015.
+
+Pearl, Judea. Causality. Cambridge university press, 2009. http://bayes.cs.ucla.edu/BOOK-2K/, start here: http://singapore.cs.ucla.edu/LECTURE/lecture_sec1.htm, read first edition for free here: http://bayes.cs.ucla.edu/BOOK-99/book-toc.html.
+
+King, G., Lucas, C. and A. Nielsen, R. (2016), The Balance-Sample Size Frontier in Matching Methods for Causal Inference. American Journal of Political Science. doi:10.1111/ajps.12272, see also https://ajps.org/2016/11/14/balance-sample-size-frontier/ and http://projects.iq.harvard.edu/frontier.
