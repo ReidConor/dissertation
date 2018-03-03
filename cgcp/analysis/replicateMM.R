@@ -78,17 +78,6 @@ eebp.adaboost.tobin.results=adaboost(eebp,"Tobins.Q.class")
 eebp.adaboost.altman.results=adaboost(eebp,"AZS.class")
 
 
-#analyze the results
-#c(spx.adaboost.tobin.results$precision.class0, spx.adaboost.tobin.results$precision.class1,auc(spx.adaboost.tobin.results$roc.obj))
-#c(sxxp.adaboost.tobin.results$precision.class0, sxxp.adaboost.tobin.results$precision.class1,auc(sxxp.adaboost.tobin.results$roc.obj))
-#c(eebp.adaboost.tobin.results$precision.class0, eebp.adaboost.tobin.results$precision.class1,auc(eebp.adaboost.tobin.results$roc.obj))
-# > errors in train and test
-#plot.errorevol(spx.adaboost.tobin.results$evol.test,spx.adaboost.tobin.results$evol.train)
-#plot.errorevol(sxxp.adaboost.tobin.results$evol.test,sxxp.adaboost.tobin.results$evol.train)
-#plot.errorevol(eebp.adaboost.tobin.results$evol.test,eebp.adaboost.tobin.results$evol.train)
-
-
-
 #**********************
 #J48 [which is actually C5.0]
 #**********************
@@ -99,75 +88,52 @@ eebp.adaboost.altman.results=adaboost(eebp,"AZS.class")
 #   
 # Returns:
 #   A number of elements of the results of the algorithm interpretation
-j48 <- function(dataset){
+j48 <- function(dataset, target){
   #we're actaully using the C5.0 algoritm, which is an improvement on the C4.5
   #+ algorithm. it is the latter than J48 is built on top of
   drops <- c("Ticker",
              "AZS.class",
+             "AZS",
              "Tobins.Q",
-             "AZS")
+             "Tobins.Q.class")
+  drops=drops[drops != target]#dont want to drop whatever is passed as the target
   data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
-  data.reduced<-data.reduced[complete.cases(data.reduced[ , "Tobins.Q.class"]),]# we only want records with a class indicator
+  data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
   
   len <- length(data.reduced[,1])
   sub <- sample(1:len,len*training.split)
-  data.reduced$Tobins.Q.class=as.factor(data.reduced$Tobins.Q.class)
+  
+  data.reduced[[target]]=as.factor(data.reduced[[target]])
+  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  
   data.reduced.train=data.reduced[sub,]
   data.reduced.test=data.reduced[-sub,]
   
   # > build model on train data
-  tree.model <- C5.0(x = data.reduced.train[ , -which(names(data.reduced.train) %in% c("Tobins.Q.class"))], y = data.reduced.train$Tobins.Q.class)
-  rule.model <- C5.0(Tobins.Q.class ~ ., data = data.reduced.train, rules = TRUE)
+  tree.model <- C5.0(x = data.reduced.train[ , -which(names(data.reduced.train) %in% c("target"))], y = data.reduced.train$target)
+  rule.model <- C5.0(target ~ ., data = data.reduced.train, rules = TRUE)
   
   # > predict on test data
-  tree.model.predict <- predict(tree.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("Tobins.Q.class"))])
-  rule.model.predict <- predict(rule.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("Tobins.Q.class"))])
-  
-  # > ROC
-  roc.obj <- roc(data.reduced.test$Tobins.Q.class, as.numeric(tree.model.predict))
+  tree.model.predict <- predict(tree.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("target"))])
+  rule.model.predict <- predict(rule.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("target"))])
   
   result=list(
    "tree.model"=tree.model,
    "tree.model.predict"=tree.model.predict,
    "rule.model"=rule.model,
    "rule.model.predict"=rule.model.predict,
-   "roc.obj"=roc.obj
+   "data.reduced"=data.reduced,
+   "data.reduced.train"=data.reduced.train,
+   "data.reduced.test"=data.reduced.test
   )
   return(result)  
   
 }
 #call J48[C5.0] on each
-spx.j48.results=j48(spx)
-sxxp.j48.results=j48(sxxp)
-eebp.j48.results=j48(eebp)
-#analyze the results
-auc(spx.j48.results$roc.obj)
-auc(sxxp.j48.results$roc.obj)
-auc(eebp.j48.results$roc.obj)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-df <- data.frame(A=1:10, B=2:11, C=3:12)
-fun1 <- function(x, column){
-  x[,column]
-}
-fun1(df, "B")
-
-
+spx.j48.tobin.results=j48(dataset=spx,target="Tobins.Q.class")
+spx.j48.altman.results=j48(spx,"AZS.class")
+sxxp.j48.tobin.results=j48(sxxp,"Tobins.Q.class")
+sxxp.j48.altman.results=j48(sxxp,"AZS.class")
+eebp.j48.tobin.results=j48(eebp,"Tobins.Q.class")
+eebp.j48.altman.results=j48(eebp,"AZS.class")
 
