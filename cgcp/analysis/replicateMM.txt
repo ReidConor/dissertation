@@ -1,0 +1,20 @@
+Notes on the Simple Logistic Algorithm Implementation
+-----------
+The original algorithm is from Weka
+I can’t install RWeka properly (would need some serious time to fix I reckon)
+Thus, use Caret
+That is, us the train() function with method=LMT (which stands for Logistic Model Trees)
+See https://www.rdocumentation.org/packages/caret/versions/5.16-24/topics/train
+See https://stackoverflow.com/questions/46572275/the-train-function-in-r-caret-package 
+The issue is, that you can’t have nulls in the independent variables 
+We have lots of nulls, such that we can’t just ignore them
+So what do?
+	impute 
+	replace with mean / median
+	encode as zero, then construct another predictor thats one if its missing / zero if not. always include both in any analysis
+
+mice (for imputation) isn’t removing all the nulls
+see https://stackoverflow.com/questions/20947908/imputation-mice-in-r-still-na-left-in-dataset
+appro this could be because there is a high level of collinearity (one predictor can be predicted from the other)
+threshold=1 should remove this issue…but doesn’t
+so..use threshold=1 to remove a lot of them then remove all the records that have nulls 
