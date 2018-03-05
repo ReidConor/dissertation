@@ -4,6 +4,7 @@ library(RMySQL)
 library(adabag)
 library(pROC)
 library(C50)
+library(mice)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
@@ -137,3 +138,65 @@ sxxp.j48.altman.results=j48(sxxp,"AZS.class")
 eebp.j48.tobin.results=j48(eebp,"Tobins.Q.class")
 eebp.j48.altman.results=j48(eebp,"AZS.class")
 
+
+
+#**********************
+#Simple Log
+#**********************
+# Runs the simple log algorithm on the given dataset
+#
+# Args:
+#   dataset: A dataframe that contains the data to run the algorithm on 
+#   
+# Returns:
+#   A number of elements of the results of the algorithm 
+simpleLog <- function(dataset,target){
+  drops <- c("Ticker",
+             "AZS.class",
+             "AZS",
+             "Tobins.Q",
+             "Tobins.Q.class")
+  drops=drops[drops != target]#dont want to drop whatever is passed as the target
+  data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
+  data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
+  
+  len <- length(data.reduced[,1])
+  sub <- sample(1:len,len*training.split)
+  
+  data.reduced[[target]]=as.factor(data.reduced[[target]])
+  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  
+  #impute
+  data.reduced.imp <- mice(data.reduced,threshold=1)
+  data.reduced <- complete(data.reduced.imp)
+  data.reduced <- data.reduced[complete.cases(data.reduced),]
+  
+  data.reduced.train=data.reduced[sub,]
+  data.reduced.test=data.reduced[-sub,]
+  
+  tcontrol <- trainControl(method = "cv", 
+                         number = 3, 
+                         returnResamp = "all",
+                         classProbs = TRUE, 
+                         summaryFunction = twoClassSummary)
+  model <- train(
+    target ~ ., 
+    data = data.reduced.test, 
+    method = "LMT", #which classification or regression model to use
+    trControl = tcontrol,
+    metric = "ROC", #what summary metric will be used to select the optimal model
+    preProc = c("center", "scale") #defines a pre-processing of the predictor data
+  )
+  
+  result=list(
+    "tcontrol"=tcontrol,
+    "data.reduced"=data.reduced,
+    "model"=model
+  )
+  return(result)  
+  
+}
+spx.simpleLog.results=simpleLog(spx,"Tobins.Q.class")
+View(spx.simpleLog.results$data.reduced)
+summary(spx.simpleLog.results$model)
+complete.cases(spx.simpleLog.results$data.reduced)
