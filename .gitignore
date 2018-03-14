@@ -3,6 +3,9 @@ _depr/
 papers/
 data/
 
+#R stuff
+*.Rhistory
+
 #swp files
 *.swp
 
