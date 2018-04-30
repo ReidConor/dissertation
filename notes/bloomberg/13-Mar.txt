@@ -1,0 +1,11 @@
+Notes on some available equity indexes in Bloomberg
+---
+> SPTSX - stands for the S&P/TSX Composite i think
+headline index for the Canadian market
+broadest in the S&P/TSX family
+TSX is the Toronto stock exchange
+
+
+		year 		tobinsQ		altmanZ
+security
+security
