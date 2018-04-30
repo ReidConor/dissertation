@@ -1,10 +1,10 @@
 #!/usr/bin/env Rscript
-#get data
 library(RMySQL)
 library(adabag)
 library(pROC)
 library(C50)
 library(mice)
+#get data
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
