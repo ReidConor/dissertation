@@ -97,48 +97,51 @@ linearRegressionWithImputationMice <- function(dataset, target) {
   #to impute
   #md.pattern(data.reduced)
   #library(VIM) #for visualizations of the magnitude of missing values
-  data.reduced.imputed <- mice(data = data.reduced, m = 5, method = "pmm", maxit = 1, seed = 500)
-  training.models <- list(analyses=vector("list", data.reduced.imputed$m))
-  len <- length(complete(data.reduced.imputed,1)[,1])
+  len <- length(data.reduced[,1])
   sub <- sample(1:len,len*training.split)
-  
+  data.reduced.train <-  data.frame(data.reduced[sub,])
+  data.reduced.test <- data.frame(data.reduced[-sub,])
+    
+  data.reduced.train.imputed <- mice(data = data.reduced.train, m = 5, method = "pmm", maxit = 1, seed = 500)
+  training.models <- list(analyses=vector("list", data.reduced.train.imputed$m))
+
+  print(typeof(data.reduced.train.imputed)) 
   #build the model
   #data.reduced.imputed$m is 5 here, or the m param in the mice command above
-  for(i in 1:data.reduced.imputed$m){
+  for(i in 1:data.reduced.train.imputed$m){
     training.models$analyses[[i]] <- lm(target ~ Tax + Norm.NI.to.NI.for.Cmn.. + Interest + OPM.T12M + 
                               Asset + Fincl..l + Oper.ROE + X5Yr.Avg.Adj.ROE + Dvd.P.O + 
-                              Sust.Gr.Rt + EBITDA.Sh + P.E + EPS + P.B + P.EBITDA + ROE + 
+                            Sust.Gr.Rt + EBITDA.Sh + P.E + EPS + P.B + P.EBITDA + ROE + 
                               EV.EBITDA.T12M + Net.Debt.to.EBITDA + Cash.Gen.Cash.Reqd + 
-                              Dvd.Yld + Board.Size + X..Empl.Reps.on.Bd + 
-                              Clssfd.Bd.Sys + X..Non.Exec.Dir.on.Bd + X..NonExec.Dir.on.Bd + 
+                             Dvd.Yld + Board.Size + X..Empl.Reps.on.Bd + 
+                             Clssfd.Bd.Sys + X..Non.Exec.Dir.on.Bd + X..NonExec.Dir.on.Bd + 
                               X..Indep.Directors + Indep.Directors + CEO.Duality + Indep.Chrprsn + 
                               Indep.Lead.Dir + Prsdg.Dir + Frmr.CEO.or.its.Equiv.on.Bd + 
                               X..Women.on.Bd + X..Wmn.on.Bd + X..Feml.Execs + X..Feml.Execs.1 + 
-                              Feml.CEO.or.Equiv + X..Execs...Co.Mgrs + Age.Young.Dir + 
-                              BOD.Age.Rng +  Bd.Avg.Age + Board.Duration + 
-                              Board.Mtgs.. + Board.Mtg.Att.. + Indep.Dir.Bd.Mtg.Att.. + 
-                              Sz.Aud.Cmte + X..Indep.Dir.on.Aud.Cmte + X..Indep.Dir.on.Comp.Cmte + 
-                              X..Indep.Dir.on.Nom.Cmte, data=complete(data.reduced.imputed, i)[sub,])
-
+                             Feml.CEO.or.Equiv + X..Execs...Co.Mgrs + Age.Young.Dir + 
+                             BOD.Age.Rng +  Bd.Avg.Age + Board.Duration + 
+                             Board.Mtgs.. + Board.Mtg.Att.. + Indep.Dir.Bd.Mtg.Att.. + 
+                             Sz.Aud.Cmte + X..Indep.Dir.on.Aud.Cmte + X..Indep.Dir.on.Comp.Cmte + 
+                             X..Indep.Dir.on.Nom.Cmte, data=complete(data.reduced.train.imputed, i))
+  
   }
   class(training.models) <- "mira"
   combined.training.models <- pool(training.models)
   #summary(combined.training.models)
-  
+
   #predict the test set
-  #is this possible?
-  #https://github.com/stefvanbuuren/mice/issues/32
-  #stack the imputed data
-  data.reduced.imputed.df <- cbind.mids(data.reduced.imputed)
-  #data.reduced.imputed.complete <- complete(data.reduced.imputed, "long")
-  #for(i in 1:data.reduced.imputed$m){
-  #  pred <- predict(combined.training.models$analyses[[i]], data=data.reduced.imputed.complete[-sub,])
-  #}
+  pred <- predict(combined.training.models, data.reduced.test)
+  #pred.actuals <- data.frame(cbind(actuals=data.reduced.test$target, predicteds=pred))
+  #print(cor(pred.actuals))
+  #head(pred.actuals)
+  
+  #min.max.accuracy <- mean(apply(pred.actuals, 1, min) / apply(pred.actuals, 1, max)) 
+  #print(min.max.accuracy)
 
 } 
 linearRegressionWithImputationMice(spx,"Tobins.Q")
 
-
+#regularised linear regression
 
 #2. apply classification on regression
 #3. results analysis and discussion
