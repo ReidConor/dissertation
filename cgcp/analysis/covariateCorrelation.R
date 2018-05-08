@@ -55,7 +55,7 @@ correlations <- function(dataset){
   
   mysql.table.name <- c(dataset.name,"_variable_correlations")
   mysql.table.name.complete <- paste(mysql.table.name, collapse = '')
-
+  names(corr.data.frame) <- c("var1", "var2","pvalue","datestamp")
   dbWriteTable(mydb.analysis, value = corr.data.frame, name = mysql.table.name.complete, overwrite = TRUE ) 
   #library(corrgram)
   #corrgram(the_data)
