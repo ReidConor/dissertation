@@ -205,11 +205,17 @@ regLinearRegression <- function(dataset, target){
   #fit on the training set
   predictor.variables <- as.matrix(data.reduced.train.complete[ , !(names(data.reduced.train.complete) %in% "target")]) #remove unwanted columns
   target.measure <- as.matrix(data.reduced.train.complete$target)
+  #lasso <- glmnet(
+  #  predictor.variables,
+  #  target.measure,
+  #  family="gaussian",
+  #  alpha=1
+  #)
   lasso <- glmnet(
     predictor.variables,
     target.measure,
     family="gaussian",
-    alpha=1
+    alpha=0.5 #this is elastic net
   )
   print(lasso)
   plot(lasso,xvar="lambda",label=T)
