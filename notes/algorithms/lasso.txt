@@ -1,0 +1,100 @@
+What is Regularisation in Machine Learning
+from https://codeburst.io/what-is-regularization-in-machine-learning-aed5a1c36590 and linked posts
+technique for solving the problem of overfitting
+overfitting occurs when the model sticks too closely to the data its trained on, and learns to pick up the noise within which is a bad thing
+how to solve? use regularisation
+> Post 1
+you penalize the loss function by adding a multiple of an L1 or L2 norm of your weights vector w
+w is the vector of the learned parameters in the linear regression  
+this both helps to avoid overfitting and will perform feature selection (in the case of L1, or lasso)
+now, you need to tune the regularization term lambda
+one way of doing this is to use cross-validation
+this is a technique where you divide the data, train the model for a fixed lambda value and test with the remainder.
+repeat this step for varying lambdas
+> Post 2
+Really just saying that regularization favours less complexity
++even if that means picking a less-accurate rule according to the training data
+ 
+ 
+This raises the question…..What is a loss function?
+from https://en.wikipedia.org/wiki/Loss_function
+it’s a function that maps an event onto a real number intuitively representing some cost associated with the event
+an optimization problem seeks to minimise a loss function
+…an objective function is either a loss function or its negative (a reward function etc)
+a loss function is typically used for parameter estimation, and the event is question is some function of the
++difference between estimated and true values for an instance of data
+in classification, this would be the cost of an incorrect classification of an example
+ 
+ 
+Which raises the question….What is least squares
+from https://en.wikipedia.org/wiki/Least_squares
+it’s an approach in regression analysis to approximate the solution of overdetermined systems
+that is, sets of equations in which there are more equations than unknowns
+least squares means that the overall solution minimizes the sum of the squares of the residuals made in the results of every single equation   
+most important application is in data fitting
+the best fit in the least-squares sense minimizes the sum of the squared residuals
+a residual is the difference between an observed value, and the fitted value provided by a model
+ 
+--------------------
+Lasso Regression Notes
+from https://en.wikipedia.org/wiki/Lasso_(statistics)
+stands for [least absolute shrinkage and selection operator]
+it’s a regression analysis method that performs both variable selection and regularization
+this enhances the prediction accuracy and interpretability of the statistical model
+originally defined for least squares, can be extended to apply to wide range of applications
+for example, generalised linear models
+ability to perform subset selection relies on the form of the constraint
++and has a variety of interpretations
+Lasso is closely related to basis pursuit denoising [??]
+ 
+>motivation
+improves accuracy and interpretability of regression models by altering the model fitting process to select only a subset
++of the provided covariates for use in the final model rather than using all of them
+prior to lasso, method for covariates selection was stepwise selection, whose benefits are limited (and sometimes makes
++things worse)
+Ridge regression is a popular technique for improving accuracy
+But ridge regression doesn’t perform variable selection
+Lasso does both by forcing the sum of the absolute value of the regression coefficients
++to be less than a fixed value,
++which in turn forces certain coefficient to be set to zero
++this effectively choses a simpler model that does not include those coefficients
+This is similar to ridge regression, but in ridge the coefficients are forced to be less than some fixed value
++which just shrinks the size, not setting any to zero
+ 
+> difference between lasso (L1 regularization) and ridge (L2 regularization)
+https://towardsdatascience.com/l1-and-l2-regularization-methods-ce25e7fc831c
+“The key difference between these techniques is that Lasso shrinks the less important feature’s coefficient to zero thus, removing some feature altogether. So, this works well for feature selection in case we have a huge number of features.”
+--------------------
+ 
+Oversampling
+We don’t have imbalanced classes per se, so this might not be appropriate
+ 
+--------------------
+ 
+Correlated Covariates
+from https://en.wikipedia.org/wiki/Lasso_(statistics)
+case where different covariates may not be independent
+several cases of lasso have been designed to address this shortcoming
+e.g. elastic net
+> elastic net  
+developed in 2005, to address several shortcomings of lasso
+when p > n (i.e. num covariates > sample size), lasso can only select n covariates and it tends to select only one covariate from any set
++of highly correlated covariates
+even when n > p, if the covariates are strongly correlated, ridge regression tends to perform better
+the elastic net extends lasso by adding an additional L^2 penalty term (see page for details)
+ultimately, the result of the elastic net penalty is a combination of the effects of the lasso and ridge penalties
+highly correlated covariates will have similar regression coefficients
+this is referred to as a grouping effect and is generally considered desirable
+it is desirable because one would like to find all the associated covariates rather than selecting only one from each set of strongly correlated covariates as lasso often does
+also, selecting only a single covariate from each group will typically result in increased prediction error since the model is less robust
+ 
+ 
+Which raises the question….How do you find correlated covariates?
+See https://stackoverflow.com/questions/21604997/how-to-find-significant-correlations-in-a-large-dataset
+Maybe do the same as the above, just a simple function that loops over all columns to find the cor() between them
+ 
+ 
+ 
+General
+This is super handy https://en.wikipedia.org/wiki/Dependent_and_independent_variables#Statistics_synonyms
+
