@@ -65,3 +65,7 @@ correlations(spx)
 correlations(eebp)
 correlations(sxxp)
 
+
+#how do we deal with Multicollinearity?
+#see http://blog.minitab.com/blog/understanding-statistics/handling-multicollinearity-in-regression-analysis
+#talks about using partial least sqaures regression or principal component analysis 
