@@ -157,6 +157,7 @@ linearRegressionWithImputationMice(spx,"Tobins.Q")#eg 0.6871641
 library(glmnet)
 regLinearRegression <- function(dataset, target){
   #https://educationalresearchtechniques.com/2017/04/05/8601/
+  #https://www.kaggle.com/jimthompson/regularized-linear-models-in-r
   #some data manipulations
   drops <- c("Ticker",
              "AZS.class", #one of these (the target) will be added back in
