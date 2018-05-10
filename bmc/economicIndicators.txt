@@ -1,0 +1,103 @@
+15-Apr
+
+**The Primacy of GDP
+main measure of economic activity 
+8% annual growth (world GDP)
+uses America as a case study, since its the highest GDP in the world 
+gap calc is still a wip
+eg Italy including black market which increased it overnight
+just because they are official and numerical doesn't mean they are accurate
+governments from time to time change the scope 
+key economic indicators
+	> economic growth
+	gdp is the market value of all final goods/services produced in a country
+	broader indicator of activity 
+	gdp = c + i + g + (x-y)
+		c = personal consumption
+		i = private investment
+		g = government consumption
+		x = exports
+		y = imports
+	breakdown of the above varies from country to country 	
+	USA is consumer driven, that is its c is 69.2% of gdp 
+	its also a net importer since its x-y = -3.6%
+	China spending a lot on infrastructure, so large i
+	Denmark has large social safety net, thus large g
+	note that if imports go up, gdp goes down as per the formula 
+	that makes sense, since youre buying imports and not producing anything to comp
+	cant look at dollar amount change in gdp (nominal), because of inflation 
+	need to look at real change, which will be lower due to inflation 
+	nominal gdp growth (%) - inflation (%) = real gdp growth (%)
+	a recession is defined as two successive quarters of negative real gdp growth 
+	
+	indicators of the health of the economy
+	> inflation
+	erodes the value of bonds
+	inflation means a unit of money tomorrow buys less than a unit of money buys today
+	inflation is the cause of the raise in cost of living 
+	two sources of inflation data - gdp report and consumer price index
+	
+
+	> unemployment
+	consumer spending is almost entirely driven by salaries
+	economy shrinks when more people get fired than hired
+	increase in unemployment depresses gdp growth 
+	positive correlation between gdp growth and employment
+
+
+	> business confidence
+	individual business leaders make much bigger decisions than individual consumers
+	business people make large investment and hire people if they are confident there will 
+	+be demand for their goods and services in the future
+	eg ism index / pmi (purchasing manager index)
+	correlation between gdp growth and pmi index
+		
+
+
+	> housing
+	accounts for 3% of us gdp 
+	but..when people buy new houses that triggers a lot more spending on other consumer goods
+	so it actually accounts for a lot more
+	for there to be new houses, builders need to have confidence that people will take a 30 year mortgage on it
+
+
+
+	real gdp growth is the main gauge of economic health 
+	economic growth is cyclical, with a series of booms and busts
+	investors interpret the economy through economic indicators 
+	leading indicators attract the most investor interest
+
+
+**Monitoring GDP
+gdp estimation by governments is a time consuming periodic activity 
+gdp arrives too late to be useful to investors
+instead, investors glean gdp growth through related indicators
+the indicators that are released first attract the most attention 
+
+
+**Forecasting GDP
+analyst forecasting info available in terminal 
+eg you can see how the estimates of pmi etc are calculated by analyst + real results 
+so you can see the pmi estimate, real figure, then drill down and see how its calculated 
+analysts maintain estimates of what key indicators will be in the short term
+they also form opinions on longer term future for the most important economic statistics
+analyst publish forecasts on key economic indicators
+long term economic estimates are foundational to financial models
+changes in estimates illustrate economic optimism and pessimism. significant changes in estimates may herald an economic turning point
+investors compile many indicators, rather than one, to predict turning points
+
+
+
+
+**ket takeaways
+1. real gdp growth is the main measure of an economy 
+2. more timely indicators offer the most insight to investors
+3. indicators can foretell turning points in the economy 
+	in some interpretation of these indicators can lead to profitable trading opportunity
+
+
+
+
+
+
+
