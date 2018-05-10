@@ -10,7 +10,9 @@ training.split=2/3
 #dependent variable is continuous, independent variables are continuous/discrete, regression line is linear.
 #http://r-statistics.co/Linear-Regression.html
 library(Matrix)
-multipleLinearRegressionWithoutImputation <- function(dataset, target){
+
+#this is likely a bit fucked due to missing values
+linearRegression <- function(dataset, target){
   #big problem here is that missing values are causing lots of test records to not be predictable
   #need imputation
   drops <- c("Ticker",
@@ -57,9 +59,9 @@ multipleLinearRegressionWithoutImputation <- function(dataset, target){
   print(min.max.accuracy)
   
 }
-multipleLinearRegressionWithoutImputation(spx,"Tobins.Q")
+linearRegression(spx,"Tobins.Q")
 
-
+#looks ok, but not regularised and prob not the best regression method for the data
 linearRegressionWithImputationMice <- function(dataset, target) {
   library(e1071)
   library(mice)
@@ -149,13 +151,13 @@ linearRegressionWithImputationMice <- function(dataset, target) {
   print(min.max.accuracy)
   
 }  
-linearRegressionWithImputationMice(spx,"AZS")#eg 0.5118446
-linearRegressionWithImputationMice(spx,"Tobins.Q")#eg 0.6871641
-
+linearRegressionWithImputationMice(spx,"AZS")#eg 0.3097797
+linearRegressionWithImputationMice(spx,"Tobins.Q")#eg 0.6644546
 
 #regularised linear regression
-library(glmnet)
+#no imputation as of yet, so only operating on complete rows (very few)
 regLinearRegression <- function(dataset, target){
+  library(glmnet)
   #https://educationalresearchtechniques.com/2017/04/05/8601/
   #https://www.kaggle.com/jimthompson/regularized-linear-models-in-r
   #some data manipulations
@@ -198,24 +200,17 @@ regLinearRegression <- function(dataset, target){
   sub <- sample(1:len,len*training.split)
   data.reduced.train <- data.frame(data.reduced[sub,])
   data.reduced.test <- data.frame(data.reduced[-sub,])
-  
   data.reduced.train.complete=data.reduced.train[complete.cases(data.reduced.train), ]
   data.reduced.test.complete=data.reduced.test[complete.cases(data.reduced.test), ]
   
   #fit on the training set
   predictor.variables <- as.matrix(data.reduced.train.complete[ , !(names(data.reduced.train.complete) %in% "target")]) #remove unwanted columns
   target.measure <- as.matrix(data.reduced.train.complete$target)
-  #lasso <- glmnet(
-  #  predictor.variables,
-  #  target.measure,
-  #  family="gaussian",
-  #  alpha=1
-  #)
-  lasso <- glmnet(
+  lasso <- cv.glmnet(
     predictor.variables,
     target.measure,
     family="gaussian",
-    alpha=0.5 #this is elastic net
+    alpha=0 #this is elastic net
   )
   print(lasso)
   plot(lasso,xvar="lambda",label=T)
@@ -227,14 +222,143 @@ regLinearRegression <- function(dataset, target){
     lasso,
     newx = data.reduced.test.complete.without.target,
     type = 'response',
-    s=.007
+    s=lasso$lambda.min
   )
   plot(lasso.response,data.reduced.test.complete$target)
-  lasso.resid <- lasso.response-data.reduced.test.complete$target
-  print(mean(lasso.resid^2))
+  print(mean((lasso.response-data.reduced.test.complete$target)^2))
   
 }
 regLinearRegression(spx,"Tobins.Q")#eg 0.655467
+
+#regularised linear regression
+#no imputation as of yet, so only operating on complete rows (very few)
+#shows method of varying alpha (ie moving from ridge to elnet to lasso)
+regLinearRegressionMultiAlphaLamdba <- function(dataset, target){
+  #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
+  set.seed(1)
+  drops <- c("Ticker",
+             "AZS.class", #one of these (the target) will be added back in
+             "AZS", #one of these (the target) will be added back in
+             "Tobins.Q", #one of these (the target) will be added back in
+             "Tobins.Q.class", #one of these (the target) will be added back in
+             "X..Indep.Dir.on.Comp.Cmte.1", #basically no variance
+             "X..Indep.Dir.on.Aud.Cmte.1", #basically no variance
+             "ROC", #too many missing values
+             "Bd.Age.Limit", #too many missing values
+             "Exec.Dir.Bd.Dur", #causing errors in pooling(?)
+             "Unit.or.2.Tier.Bd.Sys", #causing errors in pooling(?)
+             "Age.Old.Dir" #causing errors in pooling(?)
+  )
+  drops <- drops[drops != target]#dont want to remove whatever is passed as the target
+  data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
+  data.reduced <- data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
+  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  data.reduced <- data.frame(data.reduced)
+  
+  data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  data.reduced$Prsdg.Dir <- as.numeric(as.factor(data.reduced$Prsdg.Dir))
+  data.reduced$Clssfd.Bd.Sys <- as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
+  data.reduced$Indep.Lead.Dir <- as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
+  data.reduced$CEO.Duality <- as.numeric(as.factor(data.reduced$CEO.Duality))
+  data.reduced$Indep.Chrprsn <- as.numeric(as.factor(data.reduced$Indep.Chrprsn))
+  data.reduced$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(data.reduced$Frmr.CEO.or.its.Equiv.on.Bd))
+  
+  #split dataset into training and test
+  #md.pattern(data.reduced)
+  #library(VIM) #for visualizations of the magnitude of missing values
+  len <- length(data.reduced[,1])
+  sub <- sample(1:len,len*training.split)
+  data.reduced.train <- data.frame(data.reduced[sub,])
+  data.reduced.test <- data.frame(data.reduced[-sub,])
+  
+  data.reduced.train.complete=data.reduced.train[complete.cases(data.reduced.train), ]
+  data.reduced.test.complete=data.reduced.test[complete.cases(data.reduced.test), ]
+  
+  predictor.variables.train <- as.matrix(data.reduced.train.complete[ , !(names(data.reduced.train.complete) %in% "target")]) #remove unwanted columns
+  target.measure.train <- as.matrix(data.reduced.train.complete$target)
+  predictor.variables.test <- as.matrix(data.reduced.test.complete[ , !(names(data.reduced.test.complete) %in% "target")]) #remove unwanted columns
+  target.measure.test <- as.matrix(data.reduced.test.complete$target)
+  
+  #fit models
+  fit.lasso <- glmnet(predictor.variables.train, target.measure.train, family="gaussian", alpha=1)
+  fit.ridge <- glmnet(predictor.variables.train, target.measure.train, family="gaussian", alpha=0)
+  fit.elnet <- glmnet(predictor.variables.train, target.measure.train, family="gaussian", alpha=.5)
+  
+  # 10-fold Cross validation for each alpha = 0, 0.1, ... , 0.9, 1.0
+  for (i in 0:10) {
+    assign(
+      paste("fit", i, sep=""), 
+      cv.glmnet(
+        predictor.variables.train, 
+        target.measure.train, 
+        type.measure="mse", 
+        alpha=i/10,
+        family="gaussian"
+      )
+    )
+  }
+  
+  # Plot solution paths:
+  par(mfrow=c(3,2))
+  plot(fit.ridge, xvar="lambda", main="fit.ridge")
+  plot(fit0, main="Ridge")
+  plot(fit.elnet, xvar="lambda",main="fit.elnet")
+  plot(fit5, main="Elastic Net")
+  plot(fit.lasso, xvar="lambda", main="fit.lasso")
+  plot(fit10, main="LASSO")
+  
+  #musssssst be a better way of writing this code
+  pred0.1se <- predict(fit0, s=fit0$lambda.1se, newx=predictor.variables.test)
+  pred1.1se <- predict(fit1, s=fit1$lambda.1se, newx=predictor.variables.test)
+  pred2.1se <- predict(fit2, s=fit2$lambda.1se, newx=predictor.variables.test)
+  pred3.1se <- predict(fit3, s=fit3$lambda.1se, newx=predictor.variables.test)
+  pred4.1se <- predict(fit4, s=fit4$lambda.1se, newx=predictor.variables.test)
+  pred5.1se <- predict(fit5, s=fit5$lambda.1se, newx=predictor.variables.test)
+  pred6.1se <- predict(fit6, s=fit6$lambda.1se, newx=predictor.variables.test)
+  pred7.1se <- predict(fit7, s=fit7$lambda.1se, newx=predictor.variables.test)
+  pred8.1se <- predict(fit8, s=fit8$lambda.1se, newx=predictor.variables.test)
+  pred9.1se <- predict(fit9, s=fit9$lambda.1se, newx=predictor.variables.test)
+  pred10.1se <- predict(fit10, s=fit10$lambda.1se, newx=predictor.variables.test)
+  
+  pred0.min <- predict(fit0, s=fit0$lambda.min, newx=predictor.variables.test)
+  pred1.min <- predict(fit1, s=fit1$lambda.min, newx=predictor.variables.test)
+  pred2.min <- predict(fit2, s=fit2$lambda.min, newx=predictor.variables.test)
+  pred3.min <- predict(fit3, s=fit3$lambda.min, newx=predictor.variables.test)
+  pred4.min <- predict(fit4, s=fit4$lambda.min, newx=predictor.variables.test)
+  pred5.min <- predict(fit5, s=fit5$lambda.min, newx=predictor.variables.test)
+  pred6.min <- predict(fit6, s=fit6$lambda.min, newx=predictor.variables.test)
+  pred7.min <- predict(fit7, s=fit7$lambda.min, newx=predictor.variables.test)
+  pred8.min <- predict(fit8, s=fit8$lambda.min, newx=predictor.variables.test)
+  pred9.min <- predict(fit9, s=fit9$lambda.min, newx=predictor.variables.test)
+  pred10.min <- predict(fit10, s=fit10$lambda.min, newx=predictor.variables.test)
+  
+  print("-----min")
+  print (mean((target.measure.test - pred0.min)^2))
+  print (mean((target.measure.test - pred1.min)^2))
+  print (mean((target.measure.test - pred2.min)^2))
+  print (mean((target.measure.test - pred3.min)^2))
+  print (mean((target.measure.test - pred4.min)^2))
+  print (mean((target.measure.test - pred5.min)^2))
+  print (mean((target.measure.test - pred6.min)^2))
+  print (mean((target.measure.test - pred7.min)^2))
+  print (mean((target.measure.test - pred8.min)^2))
+  print (mean((target.measure.test - pred9.min)^2))
+  print (mean((target.measure.test - pred10.min)^2))
+  print("-----1se")
+  print (mean((target.measure.test - pred0.1se)^2))
+  print (mean((target.measure.test - pred1.1se)^2))
+  print (mean((target.measure.test - pred2.1se)^2))
+  print (mean((target.measure.test - pred3.1se)^2))
+  print (mean((target.measure.test - pred4.1se)^2))
+  print (mean((target.measure.test - pred5.1se)^2))
+  print (mean((target.measure.test - pred6.1se)^2))
+  print (mean((target.measure.test - pred7.1se)^2))
+  print (mean((target.measure.test - pred8.1se)^2))
+  print (mean((target.measure.test - pred9.1se)^2))
+  print (mean((target.measure.test - pred10.1se)^2))
+  
+}
+regLinearRegressionMultiAlphaLamdba(spx,"Tobins.Q")
 
 
 
