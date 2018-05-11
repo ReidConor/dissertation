@@ -362,7 +362,7 @@ regLinearRegressionMultiAlphaLamdba(spx,"Tobins.Q")
 
 #regularised linear regression
 #same as regLinearRegressionMultiAlphaLamdba but with imputation
-regLinearRegressionMultiAlphaLamdbaImputed <- function(dataset, target){
+regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
   set.seed(1)
   drops <- c("Ticker",
@@ -533,4 +533,4 @@ regLinearRegressionMultiAlphaLamdbaImputed <- function(dataset, target){
   print (mean((data.reduced.test.imputed.stacked.complete.target - pred10.1se)^2))
   
 }
-regLinearRegressionMultiAlphaLamdbaImputed(spx, "Tobins.Q")
+regLinearRegressionMultiAlphaLamdbaImputedMice(spx, "Tobins.Q")
