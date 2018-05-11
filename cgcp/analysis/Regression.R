@@ -360,7 +360,177 @@ regLinearRegressionMultiAlphaLamdba <- function(dataset, target){
 }
 regLinearRegressionMultiAlphaLamdba(spx,"Tobins.Q")
 
+#regularised linear regression
+#same as regLinearRegressionMultiAlphaLamdba but with imputation
+regLinearRegressionMultiAlphaLamdbaImputed <- function(dataset, target){
+  #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
+  set.seed(1)
+  drops <- c("Ticker",
+             "AZS.class", #one of these (the target) will be added back in
+             "AZS", #one of these (the target) will be added back in
+             "Tobins.Q", #one of these (the target) will be added back in
+             "Tobins.Q.class", #one of these (the target) will be added back in
+             "X..Indep.Dir.on.Comp.Cmte.1", #basically no variance
+             "X..Indep.Dir.on.Aud.Cmte.1", #basically no variance
+             "ROC", #too many missing values
+             "Bd.Age.Limit", #too many missing values
+             "Exec.Dir.Bd.Dur", #causing errors in pooling(?)
+             "Unit.or.2.Tier.Bd.Sys", #causing errors in pooling(?)
+             "Age.Old.Dir" #causing errors in pooling(?)
+  )
+  drops <- drops[drops != target]#dont want to remove whatever is passed as the target
+  data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
+  data.reduced <- data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
+  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  data.reduced <- data.frame(data.reduced)
+  
+  data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  data.reduced$Prsdg.Dir <- as.numeric(as.factor(data.reduced$Prsdg.Dir))
+  data.reduced$Clssfd.Bd.Sys <- as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
+  data.reduced$Indep.Lead.Dir <- as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
+  data.reduced$CEO.Duality <- as.numeric(as.factor(data.reduced$CEO.Duality))
+  data.reduced$Indep.Chrprsn <- as.numeric(as.factor(data.reduced$Indep.Chrprsn))
+  data.reduced$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(data.reduced$Frmr.CEO.or.its.Equiv.on.Bd))
+  
+  #split dataset into training and test
+  len <- length(data.reduced[,1])
+  sub <- sample(1:len,len*training.split)
+  data.reduced.train <- data.frame(data.reduced[sub,])
+  data.reduced.test <- data.frame(data.reduced[-sub,])
+  
+  #key question that needs to be answered is...
+  #is it ok for the train and test sets to be imputed independently?
+  library(mice)
+  imputation.maxit=15
+  imputation.m=5
+  #impute the training set
+  data.reduced.train.imputed <- mice(
+    data = data.reduced.train, 
+    m = imputation.m, 
+    method = "pmm", 
+    maxit = imputation.maxit, 
+    seed = 500
+  )
+  data.reduced.train.imputed.stacked <- data.frame()
+  for(i in 1:data.reduced.train.imputed$m){
+    data.reduced.train.imputed.stacked <- rbind(data.reduced.train.imputed.stacked, complete(data.reduced.train.imputed, i))
+  }
+  data.reduced.train.imputed.stacked.complete=data.reduced.train.imputed.stacked[complete.cases(data.reduced.train.imputed.stacked), ]
+  print(dim(data.reduced.train.imputed.stacked.complete))#~1480 50. not great since we should have 500*5 = 2500
+  data.reduced.train.imputed.stacked.complete.predictors <- as.matrix(data.reduced.train.imputed.stacked.complete[ , !(names(data.reduced.train.imputed.stacked.complete) %in% "target")]) #remove unwanted columns
+  data.reduced.train.imputed.stacked.complete.target <- as.matrix(data.reduced.train.imputed.stacked.complete$target)
+  
+  #impute the test set
+  data.reduced.test.imputed <- mice(
+    data = data.reduced.test, 
+    m = imputation.m, 
+    method = "pmm", 
+    maxit = imputation.maxit, 
+    seed = 500
+  )
+  data.reduced.test.imputed.stacked <- data.frame()
+  for(i in 1:data.reduced.test.imputed$m){
+    data.reduced.test.imputed.stacked <- rbind(data.reduced.test.imputed.stacked, complete(data.reduced.test.imputed, i))
+  }
+  data.reduced.test.imputed.stacked.complete=data.reduced.test.imputed.stacked[complete.cases(data.reduced.test.imputed.stacked), ]
+  print(dim(data.reduced.test.imputed.stacked.complete))
+  data.reduced.test.imputed.stacked.complete.predictors <- as.matrix(data.reduced.test.imputed.stacked.complete[ , !(names(data.reduced.test.imputed.stacked.complete) %in% "target")]) #remove unwanted columns
+  data.reduced.test.imputed.stacked.complete.target <- as.matrix(data.reduced.test.imputed.stacked.complete$target)
+  
+  
+  #fit models
+  fit.lasso <- glmnet(
+    data.reduced.train.imputed.stacked.complete.predictors, 
+    data.reduced.train.imputed.stacked.complete.target, 
+    family="gaussian", 
+    alpha=1
+  )
+  fit.ridge <- glmnet(
+    data.reduced.train.imputed.stacked.complete.predictors, 
+    data.reduced.train.imputed.stacked.complete.target, 
+    family="gaussian", 
+    alpha=0
+  )
+  fit.elnet <- glmnet(
+    data.reduced.train.imputed.stacked.complete.predictors, 
+    data.reduced.train.imputed.stacked.complete.target, 
+    family="gaussian", 
+    alpha=0.5
+  )
 
-
-#2. apply classification on regression
-#3. results analysis and discussion
+ 
+  # 10-fold Cross validation for each alpha = 0, 0.1, ... , 0.9, 1.0
+  for (i in 0:10) {
+    assign(
+      paste("fit", i, sep=""), 
+      cv.glmnet(
+        data.reduced.train.imputed.stacked.complete.predictors, 
+        data.reduced.train.imputed.stacked.complete.target, 
+        type.measure="mse", 
+        alpha=i/10,
+        family="gaussian"
+      )
+    )
+  }
+  
+  # Plot solution paths:
+  par(mfrow=c(3,2))
+  plot(fit.ridge, xvar="lambda", main="fit.ridge")
+  plot(fit0, main="Ridge")
+  plot(fit.elnet, xvar="lambda",main="fit.elnet")
+  plot(fit5, main="Elastic Net")
+  plot(fit.lasso, xvar="lambda", main="fit.lasso")
+  plot(fit10, main="LASSO")
+  
+  #musssssst be a better way of writing this code
+  pred0.1se <- predict(fit0, s=fit0$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred1.1se <- predict(fit1, s=fit1$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred2.1se <- predict(fit2, s=fit2$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred3.1se <- predict(fit3, s=fit3$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred4.1se <- predict(fit4, s=fit4$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred5.1se <- predict(fit5, s=fit5$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred6.1se <- predict(fit6, s=fit6$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred7.1se <- predict(fit7, s=fit7$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred8.1se <- predict(fit8, s=fit8$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred9.1se <- predict(fit9, s=fit9$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred10.1se <- predict(fit10, s=fit10$lambda.1se, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  
+  pred0.min <- predict(fit0, s=fit0$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred1.min <- predict(fit1, s=fit1$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred2.min <- predict(fit2, s=fit2$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred3.min <- predict(fit3, s=fit3$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred4.min <- predict(fit4, s=fit4$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred5.min <- predict(fit5, s=fit5$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred6.min <- predict(fit6, s=fit6$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred7.min <- predict(fit7, s=fit7$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred8.min <- predict(fit8, s=fit8$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred9.min <- predict(fit9, s=fit9$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  pred10.min <- predict(fit10, s=fit10$lambda.min, newx=data.reduced.test.imputed.stacked.complete.predictors)
+  
+  print("-----min")
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred0.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred1.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred2.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred3.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred4.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred5.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred6.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred7.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred8.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred9.min)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred10.min)^2))
+  print("-----1se")
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred0.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred1.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred2.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred3.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred4.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred5.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred6.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred7.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred8.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred9.1se)^2))
+  print (mean((data.reduced.test.imputed.stacked.complete.target - pred10.1se)^2))
+  
+}
+regLinearRegressionMultiAlphaLamdbaImputed(spx, "Tobins.Q")
