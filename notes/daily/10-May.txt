@@ -8,3 +8,8 @@ What I need to do is
 So vary alpha between 0-1 in intervals of 0.1
 So vary lambda between 0-1 in intervals of 0.1 
 ...and pick the one that minimises the MSE and maximises the R squared value
+
+
+
+
+
