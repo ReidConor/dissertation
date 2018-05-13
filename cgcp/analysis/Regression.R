@@ -4,7 +4,6 @@
 library(RMySQL)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 spx <- dbReadTable(conn=mydb,name='spx')
-spx.complete <- spx[complete.cases(spx[ , "Tobins.Q"]),]# we only want records with a class indicator
 
 training.split=2/3
 #multiple linear regression
@@ -395,11 +394,13 @@ tobin.q.results=regLinearRegressionMultiAlphaLamdba(spx,"Tobins.Q")
 regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
   set.seed(1)
+  training.split=2/3
   drops <- c("Ticker",
              "AZS.class", #one of these (the target) will be added back in
              "AZS", #one of these (the target) will be added back in
              "Tobins.Q", #one of these (the target) will be added back in
              "Tobins.Q.class", #one of these (the target) will be added back in
+             #-----
              "X..Indep.Dir.on.Comp.Cmte.1", #basically no variance
              "X..Indep.Dir.on.Aud.Cmte.1", #basically no variance
              "ROC", #too many missing values
@@ -410,7 +411,8 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
              "Indep.Dir.Bd.Mtg.Att..", #cant impute correctly
              "Board.Duration",
              "Sz.Aud.Cmte",
-             "X..Empl.Reps.on.Bd"
+             "X..Empl.Reps.on.Bd",
+             "Interest"
   )
   drops <- drops[drops != target]#dont want to remove whatever is passed as the target
   data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
@@ -593,5 +595,4 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   
 }
 tobin.q.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx, "Tobins.Q")
-#View(tobin.q.results$data.reduced.train.imputed.stacked)
-#model <- lm(target ~ ., data=tobin.q.results$data.reduced.train.imputed.stacked)
+coef(tobin.q.results$fit10)
