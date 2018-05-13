@@ -19,7 +19,8 @@ training.split=2/3 #proportion of data that will be dedicated to training data s
 #
 # Args:
 #   dataset: A dataframe that contains the data to run the algorithm on 
-#   
+#   target:  The dependant variable
+#
 # Returns:
 #   A number of elements of the results of adaboost
 adaboost <- function(dataset, target) {
