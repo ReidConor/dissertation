@@ -5,11 +5,6 @@ mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed'
 spx <- dbReadTable(conn=mydb,name='spx')
 summary(spx)
 dim(spx) #500 61
-spx.reduced <- spx[ , !(names(spx) %in% c("Bd.Age.Limit","Interest"))]
-  #Bd.Age.Limit has 374 missing....very unimportant from classification task done previously 
-  #ROC has 167 missing....fairly important
-  #Interest has 73 missing....not very important
-
 
 drops <- c("Ticker",
            "AZS", #one of these (the target) will be added back in
@@ -20,10 +15,14 @@ drops <- c("Ticker",
            "Interest", #too many missing values, and not important
            "Indep.Dir.Bd.Mtg.Att..", #cant impute correctly, also not important
            "Exec.Dir.Bd.Dur", #cant impute correctly, also not important
-           "Board.Duration",
-           "Sz.Aud.Cmte",
-           "X..Empl.Reps.on.Bd"
+           "Board.Duration",#cant impute correctly, also not important
+           "Sz.Aud.Cmte",#cant impute correctly, also not important
+           "X..Empl.Reps.on.Bd"#cant impute correctly, also not important
 )
+#Bd.Age.Limit has 374 missing....very unimportant from classification task done previously 
+#ROC has 167 missing....fairly important
+#Interest has 73 missing....not very important
+
 target <- "Tobins.Q"
 drops <- drops[drops != target]#dont want to remove whatever is passed as the target
 data.reduced <- spx[ , !(names(spx) %in% drops)] #remove unwanted columns
@@ -38,30 +37,27 @@ data.reduced$CEO.Duality <- as.numeric(as.factor(data.reduced$CEO.Duality))
 data.reduced$Indep.Chrprsn <- as.numeric(as.factor(data.reduced$Indep.Chrprsn))
 data.reduced$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(data.reduced$Frmr.CEO.or.its.Equiv.on.Bd))
 
+######
+#Plot
+#----
+library(VIM)
+mice_plot <- aggr(data.reduced, col=c('navyblue','yellow'),
+                  numbers=TRUE, sortVars=TRUE,
+                  labels=names(data.reduced), cex.axis=.7,
+                  gap=3, ylab=c("Missing data","Pattern"))
 
-###############
+
+######
 #Impute
-library(mice)
-imputation.maxit <- 1
-imputation.m <- 5
-data.reduced.imputed <- 
-  mice(
-    data = data.reduced, 
-    m = imputation.m, 
-    method = "pmm", 
-    maxit = imputation.maxit, 
-    seed = 500
-  )
-data.reduced.imputed.stacked <- data.frame()
-for(i in 1:data.reduced.imputed$m){
-  data.reduced.imputed.stacked <- rbind(
-    data.reduced.imputed.stacked, 
-    complete(data.reduced.imputed, i)
-  )
-}
-dim(data.reduced.imputed.stacked)
-data.reduced.imputed.stacked.complete <-
-  data.reduced.imputed.stacked[complete.cases(data.reduced.imputed.stacked), ]
-dim(data.reduced.imputed.stacked.complete)
+#----
+library(missForest)
+data.reduced.imp <- missForest(data.reduced)
+data.reduced.imp$ximp
+data.reduced.imp$OOBerror
+
+
+
+
+
 
 
