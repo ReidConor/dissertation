@@ -236,7 +236,9 @@ regLinearRegression(spx,"Tobins.Q")#eg 0.655467
 regLinearRegressionMultiAlphaLamdba <- function(dataset, target){
   #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
   set.seed(1)
-  drops <- c("Ticker",
+  #----
+  #depr drops 
+  drops_depr <- c("Ticker",
              "AZS.class", #one of these (the target) will be added back in
              "AZS", #one of these (the target) will be added back in
              "Tobins.Q", #one of these (the target) will be added back in
@@ -254,13 +256,34 @@ regLinearRegressionMultiAlphaLamdba <- function(dataset, target){
              "X..Empl.Reps.on.Bd",
              "Interest"
   )
+  #----
+  drops <- c("Ticker",
+             "AZS.class", #one of these (the target) will be added back in
+             "AZS", #one of these (the target) will be added back in
+             "Tobins.Q", #one of these (the target) will be added back in
+             "Tobins.Q.class", #one of these (the target) will be added back in
+             #-----zero import
+             "Bd.Age.Limit",
+             "Board.Duration",
+             "Exec.Dir.Bd.Dur",
+             "Feml.CEO.or.Equiv",
+             "Unit.or.2.Tier.Bd.Sys",
+             "X..Empl.Reps.on.Bd",
+             "X..Indep.Dir.on.Aud.Cmte",
+             "X..Indep.Dir.on.Aud.Cmte.1",
+             "X..Indep.Dir.on.Comp.Cmte.1",
+             "X..Indep.Dir.on.Nom.Cmte",
+             "X..Wmn.on.Bd",
+             #------prevents imputing
+             "Indep.Dir.Bd.Mtg.Att.."
+  )
   drops <- drops[drops != target]#dont want to remove whatever is passed as the target
   data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
   data.reduced <- data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
   colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
   data.reduced <- data.frame(data.reduced)
   
-  data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  #data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
   data.reduced$Prsdg.Dir <- as.numeric(as.factor(data.reduced$Prsdg.Dir))
   data.reduced$Clssfd.Bd.Sys <- as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
   data.reduced$Indep.Lead.Dir <- as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
@@ -385,9 +408,13 @@ regLinearRegressionMultiAlphaLamdba <- function(dataset, target){
   
 }
 tobin.q.results=regLinearRegressionMultiAlphaLamdba(spx,"Tobins.Q")
-#View(tobin.q.results$data.reduced.train.complete)
-#model <- lm(target ~ ., data=tobin.q.results$data.reduced.train.complete)
-#summary(model)
+coef(tobin.q.results$fit3)
+fit <- tobin.q.results$fit3
+fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min)]
+fit.r2 #0.896 [ish]
+#training dim - 146  45
+#test dim - 79 45
+
 
 #regularised linear regression
 #same as regLinearRegressionMultiAlphaLamdba but with imputation
@@ -395,12 +422,14 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   #from https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html
   set.seed(1)
   training.split=2/3
-  drops <- c("Ticker",
+  #----
+  #depr drops for now
+  drops_depr <- c("Ticker",
              "AZS.class", #one of these (the target) will be added back in
              "AZS", #one of these (the target) will be added back in
              "Tobins.Q", #one of these (the target) will be added back in
              "Tobins.Q.class", #one of these (the target) will be added back in
-             #-----
+             #--
              "X..Indep.Dir.on.Comp.Cmte.1", #basically no variance
              "X..Indep.Dir.on.Aud.Cmte.1", #basically no variance
              "ROC", #too many missing values
@@ -411,8 +440,29 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
              "Indep.Dir.Bd.Mtg.Att..", #cant impute correctly
              "Board.Duration",
              "Sz.Aud.Cmte",
+             "X..Empl.Reps.on.Bd"
+  )
+  #----
+  #new drops
+  drops <- c("Ticker",
+             "AZS.class", #one of these (the target) will be added back in
+             "AZS", #one of these (the target) will be added back in
+             "Tobins.Q", #one of these (the target) will be added back in
+             "Tobins.Q.class", #one of these (the target) will be added back in
+             #-----zero import
+             "Bd.Age.Limit",
+             "Board.Duration",
+             "Exec.Dir.Bd.Dur",
+             "Feml.CEO.or.Equiv",
+             "Unit.or.2.Tier.Bd.Sys",
              "X..Empl.Reps.on.Bd",
-             "Interest"
+             "X..Indep.Dir.on.Aud.Cmte",
+             "X..Indep.Dir.on.Aud.Cmte.1",
+             "X..Indep.Dir.on.Comp.Cmte.1",
+             "X..Indep.Dir.on.Nom.Cmte",
+             "X..Wmn.on.Bd",
+             #------prevents imputing
+             "Indep.Dir.Bd.Mtg.Att.."
   )
   drops <- drops[drops != target]#dont want to remove whatever is passed as the target
   data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
@@ -420,7 +470,7 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
   data.reduced <- data.frame(data.reduced)
   
-  data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  #data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
   data.reduced$Prsdg.Dir <- as.numeric(as.factor(data.reduced$Prsdg.Dir))
   data.reduced$Clssfd.Bd.Sys <- as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
   data.reduced$Indep.Lead.Dir <- as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
@@ -595,4 +645,9 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   
 }
 tobin.q.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx, "Tobins.Q")
-coef(tobin.q.results$fit10)
+coef(tobin.q.results$fit9)
+fit <- tobin.q.results$fit9
+fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min)]
+fit.r2 #0.764 [ish]
+#training dim - 1670  45
+#test dim - 830 45
