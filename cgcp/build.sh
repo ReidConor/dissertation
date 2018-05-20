@@ -5,9 +5,9 @@
 #/ Purpose : builds this project
 #/ Create date : 02-03-2018
 #/
-export jobDir=`pwd`
+export jobDir=/Users/Conor/Google\ Drive/MSc/_dissertation/cgcp
 export loadDir=`cd "$jobDir"; cd load/; pwd`
-export analysisDir=`cd analysis; pwd`
+export analysisDir=`cd "$jobDir"; cd analysis; pwd`
 
 filePermissions(){
   cd "$loadDir"
