@@ -5,7 +5,7 @@
 #/ Purpose : ETL proceedure for loading raw data into mysql for analysis
 #/ Create date : 20-01-2018
 #/
-export jobDir=`pwd`
+export jobDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export dissertationDir=`cd "$jobDir"; cd ../../; pwd`
 export dataDir=`cd "$dissertationDir"/data/; pwd;`
 
@@ -55,14 +55,6 @@ load(){
 }
 
 
-manipulations(){
-  cd "$jobDir"
-  ./dataManipulationsMM.R
-  errorCheck $?
-
-}
-
-
 main(){
   clear
   ddl
@@ -70,7 +62,6 @@ main(){
   load eebp.csv
   load spx.csv
   load sxxp.csv
-  manipulations
 
 }
 main
