@@ -36,20 +36,27 @@ eebp(){
 spx(){
   echo "  Cleaning spx."
   cd "$dataDir"/raw
-  cp spx_091214.xlsx "$dataDir"/processing
+  cp spx_091214.xlsx spx_extra_esg.csv "$dataDir"/processing
 
   cd "$dataDir"/processing
   ssconvert spx_091214.xlsx spx.csv
   rm spx_091214.xlsx
-  sed -i '' 's/#N\/A\ N\/A//g' spx.csv
-  sed -i '' 's/,/;/g' spx.csv
+
+  for filename in *.csv; do
+    sed -i '' 's/#N\/A\ N\/A//g' $filename
+    sed -i '' 's/,/;/g' $filename
+  done
 
   cd "$jobDir"
   python replaceBlanks.py "$dataDir"/processing/spx.csv "$dataDir"/processing/spxNoBlanks.csv
+  python replaceBlanks.py "$dataDir"/processing/spx_extra_esg.csv "$dataDir"/processing/spx_extra_esgNoBlanks.csv
 
   cd "$dataDir"/processing
   rm spx.csv; mv spxNoBlanks.csv spx.csv
+  rm spx_extra_esg.csv; mv spx_extra_esgNoBlanks.csv spx_extra_esg.csv
+
   mv spx.csv "$dataDir"/clean
+  mv spx_extra_esg.csv "$dataDir"/clean
   echo "  Cleaned."
 
 }

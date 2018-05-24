@@ -59,9 +59,10 @@ main(){
   clear
   ddl
   cleanData
-  load eebp.csv
-  load spx.csv
-  load sxxp.csv
+  #load eebp.csv
+  #load spx.csv
+  #load sxxp.csv
+  load spx_extra_esg.csv
 
 }
 main

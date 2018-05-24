@@ -3,6 +3,8 @@ use corp_gov;
 drop table if exists spx;
 drop table if exists sxxp;
 drop table if exists eebp;
+drop table if exists spx_extra;
+drop table if exists spx_extra_esg;
 
 create table spx (
   `Ticker` varchar(100) NOT NULL,
@@ -192,3 +194,15 @@ create table eebp(
   `% Indep Dir on Nom Cmte` double DEFAULT NULL,
   primary key (Ticker)
 );
+
+create table spx_extra_esg (
+  `Ticker` varchar(100) NOT NULL,
+  `Variable` varchar(500) NOT NULL,
+  `2011` double DEFAULT NULL,
+  `2012` double DEFAULT NULL,
+  `2013` double DEFAULT NULL,
+  `2014` double DEFAULT NULL,
+  `2015` double DEFAULT NULL,
+  `2016` double DEFAULT NULL,
+  `2017` double DEFAULT NULL
+)
