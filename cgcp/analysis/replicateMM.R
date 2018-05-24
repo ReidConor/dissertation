@@ -24,6 +24,7 @@ training.split=2/3 #proportion of data that will be dedicated to training data s
 # Returns:
 #   A number of elements of the results of adaboost
 adaboost <- function(dataset, target) {
+  set.seed(1)
   drops <- c("Ticker",
              "AZS.class",
              "AZS",
@@ -49,16 +50,35 @@ adaboost <- function(dataset, target) {
   mfinal <- 100 #default is 100
   maxdepth <- 30 #30 is max
   data.reduced<-data.frame(data.reduced)
+  tcontrol <- trainControl(method="cv", number=10)
   data.adaboost <- boosting(target~., 
                            data=data.reduced[sub, ], 
                            boos=TRUE, 
                            mfinal=mfinal,
-                           coeflearn="Zhu"
+                           coeflearn="Freund" #used in the calc of alpha, mm uses freund i think
                            ,control=rpart.control(maxdepth=maxdepth) #not sure i need this 
+                           ,trControl=train_control
   )
   data.adaboost.pred <- predict.boosting(data.adaboost,newdata=data.reduced[-sub, ])
   errorevol(data.adaboost,newdata=data.reduced[sub, ])->evol.train
   errorevol(data.adaboost,newdata=data.reduced[-sub, ])->evol.test
+  
+  var.importance <- data.frame(data.adaboost$importance)
+  pred.error <- data.adaboost.pred$error
+  accuracy <- 1 - pred.error
+  test.length <- len-(len*training.split)
+  training.length <- len*training.split
+  error.CI.ninty.five <- c(
+    pred.error + (1.96 * sqrt(pred.error * (1 - pred.error)) / test.length),
+    pred.error - (1.96 * sqrt(pred.error * (1 - pred.error)) / test.length)
+  )
+  coverage.of.cases <- c()
+  test.actuals <- data.reduced[-sub, ]$target
+  confusion.caret <- confusionMatrix(
+    data=data.adaboost.pred$class, 
+    test.actuals
+  )
+  roc <- roc(test.actuals, as.numeric(data.adaboost.pred$class),direction = "<")
   
   result=list(
      "data.reduced"=data.reduced, 
@@ -67,7 +87,17 @@ adaboost <- function(dataset, target) {
      "confusion"=data.adaboost.pred$confusion,
      "error"=data.adaboost.pred$error,
      "evol.train"=evol.train,
-     "evol.test"=evol.test
+     "evol.test"=evol.test,
+     "var.importance"=var.importance,
+     "pred.error"=pred.error,
+     "training.length"=training.length,
+     "test.length"=test.length,
+     "test.actuals"=test.actuals,
+     "accuracy"=accuracy,
+     "error.CI.ninty.five"=error.CI.ninty.five,
+     "coverage.of.cases"=coverage.of.cases,
+     "confusion.caret"=confusion.caret,
+     "roc"=roc
   )
   return(result)  
 }
@@ -112,21 +142,49 @@ j48 <- function(dataset, target){
   data.reduced.test=data.reduced[-sub,]
   
   # > build model on train data
-  tree.model <- C5.0(x = data.reduced.train[ , -which(names(data.reduced.train) %in% c("target"))], y = data.reduced.train$target)
-  rule.model <- C5.0(target ~ ., data = data.reduced.train, rules = TRUE)
+  tcontrol <- trainControl(method="cv", number=10)
+  tree.model <- C5.0(
+    x = data.reduced.train[ , -which(names(data.reduced.train) %in% c("target"))], 
+    y = data.reduced.train$target,
+    trcontrol=tcontrol
+  )
+  rule.model <- C5.0(
+    target ~ ., 
+    data = data.reduced.train, 
+    rules = TRUE,
+    trcontrol=tcontrol
+  )
   
   # > predict on test data
   tree.model.predict <- predict(tree.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("target"))])
   rule.model.predict <- predict(rule.model, data.reduced.test[ , -which(names(data.reduced.train) %in% c("target"))])
   
+  test.actuals <- data.reduced.test$target
+  rule.confusion.caret <- confusionMatrix(
+    data=rule.model.predict, 
+    test.actuals
+  )
+  tree.confusion.caret <- confusionMatrix(
+    data=tree.model.predict, 
+    test.actuals
+  )
+  rule.roc <- roc(test.actuals, as.numeric(rule.model.predict),direction = "<")
+  tree.roc <- roc(test.actuals, as.numeric(tree.model.predict),direction = "<")
+  
   result=list(
    "tree.model"=tree.model,
+   "summary.tree.model"=summary(tree.model),
    "tree.model.predict"=tree.model.predict,
    "rule.model"=rule.model,
+   "summary.rule.model"=summary(rule.model),
    "rule.model.predict"=rule.model.predict,
    "data.reduced"=data.reduced,
    "data.reduced.train"=data.reduced.train,
-   "data.reduced.test"=data.reduced.test
+   "data.reduced.test"=data.reduced.test,
+   "rule.confusion.caret"=rule.confusion.caret,
+   "tree.confusion.caret"=tree.confusion.caret,
+   "rule.roc"=rule.roc,
+   "tree.roc"=tree.roc
   )
   return(result)  
   
@@ -176,7 +234,7 @@ simpleLog <- function(dataset,target){
   data.reduced.test=data.reduced[-sub,]
   
   tcontrol <- trainControl(method = "cv", 
-                         number = 3, 
+                         number = 10, 
                          returnResamp = "all",
                          classProbs = TRUE, 
                          summaryFunction = twoClassSummary)
