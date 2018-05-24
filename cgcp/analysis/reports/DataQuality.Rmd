@@ -133,7 +133,9 @@ spx.missing.df <- add_rownames(spx.missing.df, "Var")
 <!-- Merge the two, output top X rows by missing values -->
 ```{r}
 spx.imp.missing <- merge(spx.missing.df,spx.imp.df,by=c("Var"))
-tail(spx.imp.missing[order(spx.imp.missing$Null.Count),],25)
+tail(spx.imp.missing[order(spx.imp.missing$Null.Count),],24)
+summary(spx.imp.missing$Importance)
+summary(spx.imp.missing$Null.Count)
 ```
 
 
@@ -167,6 +169,8 @@ sxxp.missing.df <- add_rownames(sxxp.missing.df, "Var")
 ```{r}
 sxxp.imp.missing <- merge(sxxp.missing.df,sxxp.imp.df,by=c("Var"))
 tail(sxxp.imp.missing[order(sxxp.imp.missing$Null.Count),],25)
+summary(sxxp.imp.missing$Importance)
+summary(sxxp.imp.missing$Null.Count)
 ```
 
 
