@@ -2,6 +2,7 @@
 #1. apply regularised regression rather than straight classification
 #get data
 library(RMySQL)
+library(glmnet)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 spx <- dbReadTable(conn=mydb,name='spx')
 
