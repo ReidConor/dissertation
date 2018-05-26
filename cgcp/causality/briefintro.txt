@@ -1,0 +1,27 @@
+An Introduction to Recursive Partitioning for Heterogeneous Causal Effects Estimation Using causalTree package
+---
+
+***********************
+**Dictionary
+***********************
+> recursive partitioning: Recursive partitioning creates a decision tree that strives to correctly classify members of the population by splitting it into sub-populations based on several dichotomous (completely different) independent variables
+
+> heterogeneous: diverse in character or content.
+
+
+
+
+***********************
+**Notes
+***********************
+
+tl;dr - you need to provide a treatment variable. does this fit with my analysis?
+
+casualTree function which implements the methods from recursive partitioning for heterogeneous causal effects
+also the casualForest and propensityForest functions which implements versions of the casual forces algorithm from estimation and inference of heterogeneous treatment effects using random forests
+
+the causalTree function builds a regression model and returns an rpart object 
+causalTree builds a binary regression tree model in two stages 
+but focuses on estimating hetrogeneous treatment effects 
+the function requires the user to specify a binary treatment variable in addition to the outcome variable and the features that are usually passed to rpart
+ 
