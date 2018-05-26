@@ -1,0 +1,32 @@
+emissions
+---
+GHG Scope 1				GHG_SCOPE_1
+GHG Scope 2				GHG_SCOPE_2
+Total GHG Emissions			TOTAL_GHG_EMISSIONS
+GHG Scope 3				GHG_SCOPE_2
+Travel Emissions			TRAVEL_EMISSIONS
+Carbon per unit of production		CARBON_PER_UNIT_OF_PROD
+
+
+energy
+---
+Total energy consumption		ENERGY_CONSUMPTION
+Electricity used			ELECTRICITY_USED
+Renewable energy use			RENEW_ENERGY_USE
+Renewable energy certificates		RENEWABLE_ENERGY_CERTIFICATES
+Power purchase agreement		POWER_PURCHASE_AGREEMENT
+Fuel used - natural gas			NAT_GAS_USED
+
+ESG
+---
+GHG/Revenue				TOT_GHG_CO2_EM_INTERNS_PER_SALES
+Women Empls mgmt ratio			WOMEN_MANAGEMENT_TO_EMPL_RATIO
+Women employees %			PCT_WOMEN_EMPLOYEES	
+Employee turnover %			EMPLOYEE_TURNOVER_PCT
+employee unionised %			PCT_EMPLOYEES_UNIONIZED
+lost time incident rate			LOST_TIME_INCIDENT_RATE
+independent directors %			PCT_INDEPENDENT_DIRECTORS
+percent of board member that are women	%_OF_BRD_MEMEBERS_THAT_ARE_WOMEN
+director avg age			BOD_AVERAGE_AGE
+director meeting attd %			BOARD_MEETING_ATTENDANCE_PCT
+board size				NUMBER_OF_DIRECTORS_ON_BOARD
