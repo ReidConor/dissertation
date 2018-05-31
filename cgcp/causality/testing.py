@@ -12,10 +12,19 @@ from causality.inference.independence_tests import RobustRegressionTest
 conn = MySQLdb.connect(host="localhost",
                      user="root",
                      passwd="",
-                     db="corp_gov_complete_cases")
+                     db="corp_gov_imputed")
 
 spx = pd.read_sql("SELECT * FROM spx", conn)
 spx_types = pd.read_sql("describe spx", conn)
+
+#spx.dropna(inplace=True)
+#print(spx.head(30))
+
+
+#for col in spx:
+#    print (spx[col].value_counts(dropna=False))
+#    print()
+
 
 desiredDataTypes = ['double']
 variable_types = {}
@@ -24,6 +33,7 @@ for index, row in spx_types.iterrows():
          variable_types[row["Field"]]="c"
 
 conn.close()
+
 
 # run the search
 ic_algorithm = IC(RobustRegressionTest)
