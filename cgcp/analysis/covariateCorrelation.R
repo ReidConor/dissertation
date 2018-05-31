@@ -1,6 +1,7 @@
+#!/usr/bin/env Rscript
+
 #see https://stackoverflow.com/questions/21604997/how-to-find-significant-correlations-in-a-large-dataset
 #trying to see whether we have significant correlations between predictor variables
-
 library(RMySQL)
 mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 mydb.analysis <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_analysis')
