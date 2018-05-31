@@ -21,7 +21,7 @@ errorCheck(){
 ddl(){
   echo "Performing DDL."
   cd "$jobDir"/ddl
-  mysql -u root < ddl.sql
+  mysql -u root < corp_gov.sql
   errorCheck $?
   echo "DDL'd."
 
@@ -50,7 +50,7 @@ load(){
     --lines-terminated-by='\r\n' \
     corp_gov \
     $1
-
+  errorCheck $?
   echo "Loaded."
 }
 
@@ -59,10 +59,19 @@ main(){
   clear
   ddl
   cleanData
-  #load eebp.csv
-  #load spx.csv
-  #load sxxp.csv
-  load spx_extra_esg.csv
+
+  #theres a better way of doing the below
+  #but want the easy ability to comment out / in any of these for ad-hoc runs
+  load eebp.csv
+  load spx.csv
+  load sxxp.csv
+
+  load spx_esg.csv
+  load spx_emissions.csv
+  load spx_energy.csv
+  load spx_actual_new_income_per_employee.csv
+  load spx_cash_flow_per_employee.csv
+  load spx_ghg_scope_1.csv
 
 }
 main
