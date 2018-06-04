@@ -12,7 +12,7 @@ impute <- function(dataset){
   set.seed(1)
   library(mice)
   imputation.maxit <- 15
-  imputation.m <- 3
+  imputation.m <- 5
   imputation.method <- "pmm"
 
   dataset.imputed <- mice(
