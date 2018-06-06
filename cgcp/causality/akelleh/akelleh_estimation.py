@@ -21,8 +21,6 @@ print(X.head(10))
 matcher = PropensityScoreMatching()
 print(matcher.estimate_ATE(X, 'd', 'y', {'z1': 'c', 'z2': 'c', 'z3': 'c'}))
 
-#matcher.check_support(X, 'd', {'z1': 'c', 'z2': 'c', 'z3': 'c'})
+matcher.check_support(X, 'd', {'z1': 'c', 'z2': 'c', 'z3': 'c'})
 
 print(matcher.assess_balance(X, 'd', {'z1': 'c', 'z2': 'c', 'z3': 'c'}))
-
-
