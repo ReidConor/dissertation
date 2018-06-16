@@ -1,0 +1,9 @@
+Questions
+***************
+> is it ok to limit myself to binary 'treatments' (or providers in the "A Casual Tree Approach" paper)
+with multi providers, things get fairly complex
+
+
+> should I compare regression trees with casual trees?
+and casual trees with causal networks? 
+ 

@@ -1,0 +1,4 @@
+Types of variables to use for 'treatments'
+	Feml.CEO.or.Equiv 		have
+	total CSR spend			dont have
+	
