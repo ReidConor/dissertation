@@ -1,0 +1,7 @@
+TODO - June 4th
+
+Get the causal DAG code to work again
+Restructure project to allow all akelleh code to be bundled
+Read + Implement Robins G formula for causal effects
+Read + Implement causal estimation code 
+

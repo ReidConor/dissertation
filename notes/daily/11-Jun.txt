@@ -1,0 +1,10 @@
+TODO
+----
+Explore beneish m-score availability
+	have components to construct	
+
+Explore CSR data again
+
+
+Implement the above into my regression analysis
+
