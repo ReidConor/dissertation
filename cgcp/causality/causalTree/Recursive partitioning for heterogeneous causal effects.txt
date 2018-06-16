@@ -1,0 +1,115 @@
+---
+-Name: Recursive Partitioning for Heterogeneous Causal Effects
+-Author: Susan Athey and Guido Imbens
+---
+
+***********************
+**Dictionary
+***********************
+> recursive partitioning: Recursive partitioning creates a decision tree that strives to correctly classify members of the population by splitting it into sub-populations based on several dichotomous (completely different) independent variables
+
+> heterogeneous: diverse in character or content.
+
+
+TOC
+	1. Abstract
+	2. Intro
+	3. The Problem
+
+***********************
+**1. Abstract
+***********************
+propose methods for estimating heterogeneity in casual effects in experimental and observation studies
++ and for conducting hypnosis these about the magnitude of differences in treatment effects across subsets of the population
+they provide a way to partition the data into subpopulations that differ in the magnitude of their treatment effects
+they enables the construction of valid confidence intervals for treatment effects 
+they also provide an 'honest' approach to estimation
+this is where one sample is used to construct the partition and another to estimate the treatment effects for each subpopulation
+so..they build regression trees that optimise the goodness of fit in treatment effects and accounts for honest estimation
+they also say that the ground truth for a causal effect is not observed for any individual unit, so cross validation methods
++ to be altered too
+
+
+
+***********************
+**2. Intro
+***********************
+they study two problems
+1. estimating heterogeneity by features in causal effects in exp and obs studies
+2. conducting inference about the magnitude of the differences in treatment effects across subsets of the population
+	> so theres two areas in causal analysis. first is id-ing features that are causally impactful, and second is 
+	  + estimating how impactful a treatment effect is 
+they define causal effects are the comparison between outcomes we observe and counterfactuals we would have seen under diff treatment
+they intro methods for selecting subpopulation to estimate treatment effect heterogeneity 
+
+they're methodology is built on regression trees
+in regression trees, you split the population on features where units in that partition get the same prediction
+in causal trees, you split the population according to treatment effect heterogeneity 
+
+they say that a model is honest if it does not use the same info for selecting the model structure
++ as it does for estimation given a model structure
+this is done by splitting the training same into two parts
+one is used for constructing the tree (including cross-validation) 
+and the second for estimating treatment effects within leaves of the tree
+
+a key contribution of this paper is to show that criteria for both constructing that partition and CV change 
++ when we anticipate honest estimation
+in the first stage os estimation, the criterion is the expectation of the MSE when treatment effects are reestimate in the 
++ second stage
+
+
+a fundamental challenge to applying machine learning methods (like reg trees) to the problem of causal inference 
++ is that regularisation approaches based on CV typically rely on observing the ground truth
+that is, the actual outcomes in a cross-validation sample
+obviously, we dont have the actual outcomes for the counterfactuals
+the casual effect is not observed for any individual unit, so we don't have ground truth directly  
+they propose approaches for constructing unbiased estimated of the MSE of the causal effect of the treatment
+	> not sure what this actually means...
+
+
+
+***********************
+**3. The Problem
+***********************
+difficult to write about here due to math notation
+
+
+
+***********************
+**4. Honest Inference for Population Averages
+***********************
+the approach here differs from conventional classification and regression trees in two fundamental ways
+first is that they focus on estimating conditional average treatment effects rather than predicting outcomes
+thus conventional regression trees are not directly application because we do not observe unit-level casual effects for any unit
+second, they impose a separation between constructing the partition and estimating effects within leaves of the partition 
+this is done by using separate samples for the two tasks, or what they refer to as honest estimation
+honest estimation contrasts with adaptive estimation used in CART 
+adaptive involves the same data being used to build the partition and estimate leaf effects
+
+**the honest / adaptive target
+central to this paper is the criterion used to compare alternative estimators 
+they focus on MSE, but modified
+by using honest, you are splitting the training data leaving fewer observations to build the tree with
+this would in turn increase the expected MSE
+but, honest prevents extreme Y's from being placed in the same leaves as other extreme values
+this in turn means the sample means of the element are more extreme than they would be in an independent sample
+
+**CART implementation
+there are two distinct parts
+the first is the initial tree building
+the second is the cross-validation to select a complexity parameter used for pruning
+each part relies on a criterion function based on MSE
+----cut off here
+
+
+
+
+
+
+
+
+
+
+ 
+
+

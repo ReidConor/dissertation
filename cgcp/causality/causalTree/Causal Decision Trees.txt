@@ -1,0 +1,31 @@
+---
+-Name: Causal Decision Trees
+-Author: Jiuyong, Li et al 
+-Year: 2015
+---
+
+***********************
+**Dictionary
+***********************
+
+
+TOC
+	Abstract
+	1. Introduction
+
+
+***********************
+**Abstract
+***********************
+causal relationships are normally discovered with designed experiments like randomised controlled trails
+relationships can also be found using some well designed observational studies 
+but they require domain experts knowledge and the process is normal time consuming 
+need for scalable and automated methods for causal relationship exploration in data
+this paper outlines how causal decision trees are developed where nodes have causal interpretations 
+follows a well established causal inference framework and makes use of a classic statistical test
+**mentions this is appropriate for large datasets 
+
+
+***********************
+**1. Introduction
+***********************
