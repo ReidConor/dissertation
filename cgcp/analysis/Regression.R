@@ -4,7 +4,9 @@
 library(RMySQL)
 library(glmnet)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
-spx <- dbReadTable(conn=mydb,name='spx')
+mydb.imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
+spx <- dbReadTable(conn=mydb.imputed,name='spx')
+spx.mscore <- dbReadTable(conn=mydb.imputed,name='spx_mscore')
 
 training.split=2/3
 #multiple linear regression
@@ -450,6 +452,8 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
              "AZS", #one of these (the target) will be added back in
              "Tobins.Q", #one of these (the target) will be added back in
              "Tobins.Q.class", #one of these (the target) will be added back in
+             "FiveVarEq", #one of these (the target) will be added back in
+             "EightVarEq", #one of these (the target) will be added back in
              #-----zero import
              "Bd.Age.Limit",
              "Board.Duration",
@@ -463,7 +467,16 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
              "X..Indep.Dir.on.Nom.Cmte",
              "X..Wmn.on.Bd",
              #------prevents imputing
-             "Indep.Dir.Bd.Mtg.Att.."
+             "Indep.Dir.Bd.Mtg.Att..",
+             #------do to with mscore
+             "DSRI",
+             "GMI",
+             "AQI",
+             "SGI",
+             "DEPI",
+             "SGAI",
+             "TATA",
+             "LVGI"
   )
   drops <- drops[drops != target]#dont want to remove whatever is passed as the target
   data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
@@ -485,67 +498,29 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   data.reduced.train <- data.frame(data.reduced[sub,])
   data.reduced.test <- data.frame(data.reduced[-sub,])
   
-  #key question that needs to be answered is...
-  #is it ok for the train and test sets to be imputed independently?
-  library(mice)
-  imputation.maxit <- 15
-  imputation.m <- 5
-  imputation.method <- "pmm"
-  #impute the training set
-  data.reduced.train.imputed <- mice(
-    data = data.reduced.train, 
-    m = imputation.m, 
-    method = imputation.method, 
-    maxit = imputation.maxit, 
-    seed = 500
-  )
-  data.reduced.train.imputed.stacked <- data.frame()
-  for(i in 1:data.reduced.train.imputed$m){
-    data.reduced.train.imputed.stacked <- rbind(data.reduced.train.imputed.stacked, complete(data.reduced.train.imputed, i))
-  }
-  print(dim(data.reduced.train.imputed.stacked))
-  #the stacking isnt the problem, its the imputation itself
-  #data.reduced.train.imputed.stacked <- complete(data.reduced.train.imputed, 1)
-  
-  data.reduced.train.imputed.stacked.predictors <- as.matrix(data.reduced.train.imputed.stacked[ , !(names(data.reduced.train.imputed.stacked) %in% "target")]) #remove unwanted columns
-  data.reduced.train.imputed.stacked.target<- as.matrix(data.reduced.train.imputed.stacked$target)
+  data.reduced.train.predictors <- as.matrix(data.reduced.train[ , !(names(data.reduced.train) %in% "target")]) #remove unwanted columns
+  data.reduced.train.target <- as.matrix(data.reduced.train$target)
+  data.reduced.test.predictors <- as.matrix(data.reduced.test[ , !(names(data.reduced.test) %in% "target")]) #remove unwanted columns
+  data.reduced.test.target <- as.matrix(data.reduced.test$target)
 
-  #impute the test set
-  data.reduced.test.imputed <- mice(
-    data = data.reduced.test, 
-    m = imputation.m, 
-    method = imputation.method, 
-    maxit = imputation.maxit, 
-    seed = 500
-  )
-  data.reduced.test.imputed.stacked <- data.frame()
-  for(i in 1:data.reduced.test.imputed$m){
-    data.reduced.test.imputed.stacked <- rbind(data.reduced.test.imputed.stacked, complete(data.reduced.test.imputed, i))
-  }
-  print(dim(data.reduced.test.imputed.stacked))
-  #the stacking isnt the problem, its the imputation itself
-  #data.reduced.test.imputed.stacked <- complete(data.reduced.test.imputed, 1)
-  
-  data.reduced.test.imputed.stacked.predictors <- as.matrix(data.reduced.test.imputed.stacked[ , !(names(data.reduced.test.imputed.stacked) %in% "target")]) #remove unwanted columns
-  data.reduced.test.imputed.stacked.target <- as.matrix(data.reduced.test.imputed.stacked$target)
   
   library(glmnet)
   #fit models
   fit.lasso <- glmnet(
-    data.reduced.train.imputed.stacked.predictors, 
-    data.reduced.train.imputed.stacked.target, 
+    data.reduced.train.predictors, 
+    data.reduced.train.target, 
     family="gaussian", 
     alpha=1
   )
   fit.ridge <- glmnet(
-    data.reduced.train.imputed.stacked.predictors, 
-    data.reduced.train.imputed.stacked.target, 
+    data.reduced.train.predictors, 
+    data.reduced.train.target, 
     family="gaussian", 
     alpha=0
   )
   fit.elnet <- glmnet(
-    data.reduced.train.imputed.stacked.predictors, 
-    data.reduced.train.imputed.stacked.target, 
+    data.reduced.train.predictors, 
+    data.reduced.train.target, 
     family="gaussian", 
     alpha=0.5
   )
@@ -556,8 +531,8 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
     assign(
       paste("fit", i, sep=""), 
       cv.glmnet(
-        data.reduced.train.imputed.stacked.predictors, 
-        data.reduced.train.imputed.stacked.target, 
+        data.reduced.train.predictors, 
+        data.reduced.train.target, 
         type.measure="mse", 
         alpha=i/10,
         family="gaussian"
@@ -575,54 +550,54 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   plot(fit10, main="LASSO")
   
   #musssssst be a better way of writing this code
-  pred0.1se <- predict(fit0, s=fit0$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred1.1se <- predict(fit1, s=fit1$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred2.1se <- predict(fit2, s=fit2$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred3.1se <- predict(fit3, s=fit3$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred4.1se <- predict(fit4, s=fit4$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred5.1se <- predict(fit5, s=fit5$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred6.1se <- predict(fit6, s=fit6$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred7.1se <- predict(fit7, s=fit7$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred8.1se <- predict(fit8, s=fit8$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred9.1se <- predict(fit9, s=fit9$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
-  pred10.1se <- predict(fit10, s=fit10$lambda.1se, newx=data.reduced.test.imputed.stacked.predictors)
+  pred0.1se <- predict(fit0, s=fit0$lambda.1se, newx=data.reduced.test.predictors)
+  pred1.1se <- predict(fit1, s=fit1$lambda.1se, newx=data.reduced.test.predictors)
+  pred2.1se <- predict(fit2, s=fit2$lambda.1se, newx=data.reduced.test.predictors)
+  pred3.1se <- predict(fit3, s=fit3$lambda.1se, newx=data.reduced.test.predictors)
+  pred4.1se <- predict(fit4, s=fit4$lambda.1se, newx=data.reduced.test.predictors)
+  pred5.1se <- predict(fit5, s=fit5$lambda.1se, newx=data.reduced.test.predictors)
+  pred6.1se <- predict(fit6, s=fit6$lambda.1se, newx=data.reduced.test.predictors)
+  pred7.1se <- predict(fit7, s=fit7$lambda.1se, newx=data.reduced.test.predictors)
+  pred8.1se <- predict(fit8, s=fit8$lambda.1se, newx=data.reduced.test.predictors)
+  pred9.1se <- predict(fit9, s=fit9$lambda.1se, newx=data.reduced.test.predictors)
+  pred10.1se <- predict(fit10, s=fit10$lambda.1se, newx=data.reduced.test.predictors)
   
-  pred0.min <- predict(fit0, s=fit0$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred1.min <- predict(fit1, s=fit1$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred2.min <- predict(fit2, s=fit2$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred3.min <- predict(fit3, s=fit3$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred4.min <- predict(fit4, s=fit4$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred5.min <- predict(fit5, s=fit5$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred6.min <- predict(fit6, s=fit6$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred7.min <- predict(fit7, s=fit7$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred8.min <- predict(fit8, s=fit8$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred9.min <- predict(fit9, s=fit9$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
-  pred10.min <- predict(fit10, s=fit10$lambda.min, newx=data.reduced.test.imputed.stacked.predictors)
+  pred0.min <- predict(fit0, s=fit0$lambda.min, newx=data.reduced.test.predictors)
+  pred1.min <- predict(fit1, s=fit1$lambda.min, newx=data.reduced.test.predictors)
+  pred2.min <- predict(fit2, s=fit2$lambda.min, newx=data.reduced.test.predictors)
+  pred3.min <- predict(fit3, s=fit3$lambda.min, newx=data.reduced.test.predictors)
+  pred4.min <- predict(fit4, s=fit4$lambda.min, newx=data.reduced.test.predictors)
+  pred5.min <- predict(fit5, s=fit5$lambda.min, newx=data.reduced.test.predictors)
+  pred6.min <- predict(fit6, s=fit6$lambda.min, newx=data.reduced.test.predictors)
+  pred7.min <- predict(fit7, s=fit7$lambda.min, newx=data.reduced.test.predictors)
+  pred8.min <- predict(fit8, s=fit8$lambda.min, newx=data.reduced.test.predictors)
+  pred9.min <- predict(fit9, s=fit9$lambda.min, newx=data.reduced.test.predictors)
+  pred10.min <- predict(fit10, s=fit10$lambda.min, newx=data.reduced.test.predictors)
   
   print("-----min")
-  print (mean((data.reduced.test.imputed.stacked.target - pred0.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred1.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred2.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred3.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred4.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred5.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred6.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred7.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred8.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred9.min)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred10.min)^2))
+  print (mean((data.reduced.test.target - pred0.min)^2))
+  print (mean((data.reduced.test.target - pred1.min)^2))
+  print (mean((data.reduced.test.target - pred2.min)^2))
+  print (mean((data.reduced.test.target - pred3.min)^2))
+  print (mean((data.reduced.test.target - pred4.min)^2))
+  print (mean((data.reduced.test.target - pred5.min)^2))
+  print (mean((data.reduced.test.target - pred6.min)^2))
+  print (mean((data.reduced.test.target - pred7.min)^2))
+  print (mean((data.reduced.test.target - pred8.min)^2))
+  print (mean((data.reduced.test.target - pred9.min)^2))
+  print (mean((data.reduced.test.target - pred10.min)^2))
   print("-----1se")
-  print (mean((data.reduced.test.imputed.stacked.target - pred0.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred1.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred2.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred3.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred4.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred5.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred6.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred7.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred8.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred9.1se)^2))
-  print (mean((data.reduced.test.imputed.stacked.target - pred10.1se)^2))
+  print (mean((data.reduced.test.target - pred0.1se)^2))
+  print (mean((data.reduced.test.target - pred1.1se)^2))
+  print (mean((data.reduced.test.target - pred2.1se)^2))
+  print (mean((data.reduced.test.target - pred3.1se)^2))
+  print (mean((data.reduced.test.target - pred4.1se)^2))
+  print (mean((data.reduced.test.target - pred5.1se)^2))
+  print (mean((data.reduced.test.target - pred6.1se)^2))
+  print (mean((data.reduced.test.target - pred7.1se)^2))
+  print (mean((data.reduced.test.target - pred8.1se)^2))
+  print (mean((data.reduced.test.target - pred9.1se)^2))
+  print (mean((data.reduced.test.target - pred10.1se)^2))
   
   result=list(
     "fit.lasso"=fit.lasso,
@@ -639,8 +614,8 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
     "fit8"=fit8,
     "fit9"=fit9,
     "fit10"=fit10,
-    "data.reduced.train.imputed.stacked"=data.reduced.train.imputed.stacked,
-    "data.reduced.test.imputed.stacked"=data.reduced.test.imputed.stacked
+    "data.reduced.train"=data.reduced.train,
+    "data.reduced.test"=data.reduced.test
   )
   return(result) 
   
@@ -652,3 +627,9 @@ fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min
 fit.r2 #0.764 [ish]
 #training dim - 1670  45
 #test dim - 830 45
+
+mscore.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx.mscore, "EightVarEq")
+coef(mscore.results$fit1)
+fit <- mscore.results$fit9
+fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min)]
+fit.r2 #0.2603585...terrible
