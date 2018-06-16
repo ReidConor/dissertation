@@ -73,5 +73,8 @@ main(){
   load spx_cash_flow_per_employee.csv
   load spx_ghg_scope_1.csv
 
+  load spx_csr.csv
+  load spx_mscore.csv
+
 }
 main

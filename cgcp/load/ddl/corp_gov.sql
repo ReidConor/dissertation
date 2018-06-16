@@ -11,6 +11,8 @@ drop table if exists spx_energy;
 drop table if exists spx_actual_new_income_per_employee;
 drop table if exists spx_cash_flow_per_employee;
 drop table if exists spx_ghg_scope_1;
+drop table if exists spx_mscore;
+drop table if exists spx_csr;
 
 create table spx (
   `Ticker` varchar(100) NOT NULL,
@@ -271,4 +273,27 @@ create table spx_ghg_scope_1 (
   `2015` double DEFAULT NULL,
   `2016` double DEFAULT NULL,
   `2017` double DEFAULT NULL
+);
+
+create table spx_mscore (
+  `Ticker` varchar(100) NOT NULL,
+  `Variable` varchar(500) NOT NULL,
+  `10_2013` double DEFAULT NULL,
+  `12_2013` double DEFAULT NULL,
+  `10_2014` double DEFAULT NULL,
+  `12_2014` double DEFAULT NULL,
+  `10_2015` double DEFAULT NULL,
+  `12_2015` double DEFAULT NULL,
+  `10_2016` double DEFAULT NULL,
+  `12_2016` double DEFAULT NULL
+);
+
+create table spx_csr (
+  `Ticker` varchar(100) NOT NULL,
+  `Variable` varchar(500) NOT NULL,
+  `2012` double DEFAULT NULL,
+  `2013` double DEFAULT NULL,
+  `2014` double DEFAULT NULL,
+  `2015` double DEFAULT NULL,
+  `2016` double DEFAULT NULL
 );
