@@ -35,23 +35,23 @@ def stageAlgo(types):
 if __name__ == "__main__":
     os.system('clear')
 
-    data, types = getData("spx")
+    data, types = getData("spx_esg_disc")
     controlFor = stageAlgo(types)
 
     matcher = PropensityScoreMatching()
-    print(matcher.estimate_ATE(data, 'Feml.CEO.or.Equiv', 'AZS', {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True))
+    print(matcher.estimate_ATE(data, 'esg_disc_score_bin', 'AZS', {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True))
     #of the form matcher.estimate_ATE (data.frame, treatment, target, dict{vars to control for})
 
-    matcher.check_support(data, 'Feml.CEO.or.Equiv', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
+    matcher.check_support(data, 'esg_disc_score_bin', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
 
     print("")
     print("Balance before matching")
-    print(matcher.assess_balance(data, 'Feml.CEO.or.Equiv', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print(matcher.assess_balance(data, 'esg_disc_score_bin', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
     print ("")
 
-    data = matcher.score(data, assignment='Feml.CEO.or.Equiv', confounder_types={'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
-    treated, control = matcher.match(data, assignment='Feml.CEO.or.Equiv')
+    data = matcher.score(data, assignment='esg_disc_score_bin', confounder_types={'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
+    treated, control = matcher.match(data, assignment='esg_disc_score_bin')
     print("")
     print("Balance after matching")
-    print(matcher.assess_balance(treated.append(control), 'Feml.CEO.or.Equiv', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print(matcher.assess_balance(treated.append(control), 'esg_disc_score_bin', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
     print ("")

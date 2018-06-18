@@ -50,7 +50,7 @@ def runSearch(data,algo_var_types):
 if __name__ == "__main__":
     os.system('clear')
 
-    data, types = getData("spx")
+    data, types = getData("spx_fceo")
 
     algo_var_types = stageAlgo(types,"Tobins.Q")
     print(len(algo_var_types))
