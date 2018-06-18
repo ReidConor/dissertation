@@ -1,8 +1,11 @@
 library(causalTree)
 library(RMySQL)
 
+c
 mydb.imputed.scaled <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed_scaled')
-spx <- dbReadTable(conn=mydb.imputed.scaled,name='spx')
+spx.fceo <- dbReadTable(conn=mydb.imputed.scaled,name='spx_fceo')
+spx.esg <- dbReadTable(conn=mydb.imputed.scaled,name='spx_esg_disc')
+spx.cgcp <- dbReadTable(conn=mydb.imputed,name='spx_cgcp')
 
 #*********
 #causalTree
@@ -35,12 +38,13 @@ casual_tree <- function(dataset,target,treatment.var) {
   
   tree$cptable
   opcp <- tree$cptable[,1][which.min(tree$cptable[,4])] #opcp is the complexity param corressponding to the minimum cross validation error in the cptable
-  opfit <- prune(tree, opcp)
+  opTree <- prune(tree, opcp)
   #rpart.plot(opfit)
   
   result=list(
     "opcp"=opcp,
-    "opfit"=opfit
+    "opTree"=opTree,
+    "tree"=tree
   )
   return(result)
 }
@@ -84,16 +88,55 @@ honest_casual_tree <- function(dataset,target,treatment.var) {
   
   result=list(
     "opcp"=opcp,
-    "opTree"=opTree
+    "opTree"=opTree,
+    "honestTree"=honestTree
   )
   return(result)
   
   
 }
 
-spx.results <- casual_tree(spx,'Tobins.Q','Feml.CEO.or.Equiv')
-rpart.plot(spx.results$opfit)
+# I think the "causal effect" is the diff in means 
+# between the treated and non-treated populations
+#
+# so the bigger the diff, the more effect the treatment has
+# if its minus, the treatment casues the target var to go down and visa versa
+# in that popualtion, defined by the splits in the decision tree
 
-spx.honest.results <- honest_casual_tree(spx,'Tobins.Q','Feml.CEO.or.Equiv')
-rpart.plot(spx.honest.results$opTree)
 
+spx.fceo.results <- casual_tree(spx.fceo,'Tobins.Q','Feml.CEO.or.Equiv')
+rpart.plot(spx.fceo.results$opTree)
+summary(spx.fceo.results$opTree)
+
+spx.fceo.honest.results <- honest_casual_tree(spx.fceo,'Tobins.Q','Feml.CEO.or.Equiv')
+rpart.plot(spx.fceo.honest.results$opTree)
+
+spx.esg.honest.results <- casual_tree(spx.esg,'Tobins.Q','esg_disc_score_bin')
+rpart.plot(spx.esg.honest.results$opTree)
+summary(spx.esg.honest.results$opTree)
+
+#--------------
+drops <- c(
+  "Ticker",
+  "Clssfd.Bd.Sys",
+  "CEO.Duality",
+  "Indep.Chrprsn",
+  "Indep.Lead.Dir",
+  "Prsdg.Dir",
+  "AZS.class",
+  "FiveVarEq",          
+  "EightVarEq",
+  "Tobins.Q.class",
+  "AZS"
+)
+spx.cgcp <- spx.cgcp[ , !(names(spx.cgcp) %in% drops)]
+spx.cgcp$Feml.CEO.or.Equiv <- ifelse(spx.cgcp$Feml.CEO.or.Equiv == 'Y', 1, 0)
+spx.cgcp$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(spx.cgcp$Frmr.CEO.or.its.Equiv.on.Bd))
+summary(spx.cgcp)
+table(spx.cgcp$esg_disc_score_bin)
+
+spx.cgcp.results <- casual_tree(spx.cgcp,'Tobins.Q','esg_disc_score_bin')
+rpart.plot(spx.cgcp.results$opTree)
+summary(spx.cgcp.results$opTree)
+spx.cgcp.results$opTree
+summary(spx.cgcp)
