@@ -5,6 +5,14 @@ library(reshape)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov')
 mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 
+
+# Beneish M-Score
+#
+#
+#
+#
+#
+#
 spx.mscore <- dbReadTable(conn=mydb,name='spx_mscore')
 
 spx.mscore.reduced <- spx.mscore[c("Ticker","Variable", "X12_2013", "X10_2014")]
@@ -112,15 +120,46 @@ spx.mscore.flattened.calc$Ticker <- as.character(spx.mscore.flattened.calc$Ticke
 spx.mscore.flattened.calc$Ticker <- gsub(" ", "", spx.mscore.flattened.calc$Ticker, fixed = TRUE)
 
 
+
+
+
+
+
+# CSR
+#
+#
+#
+#
+#
+#
+spx.csr <- dbReadTable(conn=mydb,name='spx_csr')
+spx.csr.reduced <- spx.csr[c("Ticker","Variable", "X2014")]
+spx.csr.reduced <- spx.csr.reduced[spx.csr.reduced$Variable == "ESG_DISCLOSURE_SCORE",]
+for(i in 1:ncol(spx.csr.reduced)){
+  spx.csr.reduced[is.na(spx.csr.reduced[,i]), i] <- mean(spx.csr.reduced[,i], na.rm = TRUE)
+}
+spx.csr.reduced <- data.frame(spx.csr.reduced$Ticker, spx.csr.reduced$X2014) 
+colnames(spx.csr.reduced) <- c("Ticker","ESG_DISCLOSURE_SCORE")
+spx.csr.reduced$Ticker <- gsub(" ", "", spx.csr.reduced$Ticker, fixed = TRUE)
+# Merge and write
+#
+#
+#
+#
+#
+#
 spx <- dbReadTable(conn=mydb.processed,name='spx')
 spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
 
-to.write <- merge(x=spx.mscore.flattened.calc, y=spx, by.x="Ticker", by.y="Ticker")
+to.write <- merge(x=spx, y=spx.mscore.flattened.calc, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+to.write <- merge(x=to.write, y=spx.csr.reduced, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+
+summary(to.write)
 
 dbWriteTable(
   mydb.processed, 
   value = to.write, 
-  name = "spx_mscore", 
+  name = "spx_cgcp", 
   overwrite = TRUE,
   row.names=FALSE
 ) 
