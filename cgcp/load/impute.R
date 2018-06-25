@@ -34,11 +34,17 @@ spx.cgcp.imputed <- impute(spx.cgcp)
 sxxp.imputed <- impute(sxxp)
 eebp.imputed <- impute(eebp)
 
+#handle eebp being a dick
+eebp.imputed$Bd.Age.Limit <- NULL
+eebp.imputed$Dvd.Yld <- NULL
+eebp.imputed$Clssfd.Bd.Sys <- NULL
+eebp.imputed$Prsdg.Dir <- NULL
+eebp.imputed$CEO.Duality <- NULL 
 
 #get complete cases
 spx.imputed.complete=spx.imputed[complete.cases(spx.imputed), ]
 spx.cgcp.imputed.complete=spx.cgcp.imputed[complete.cases(spx.cgcp.imputed), ]
-sxxp.imputed.complet=sxxp.imputed[complete.cases(sxxp.imputed), ]
+sxxp.imputed.complete=sxxp.imputed[complete.cases(sxxp.imputed), ]
 eebp.imputed.complete=eebp.imputed[complete.cases(eebp.imputed), ]
 
 #sort out the esg disc bin score
@@ -51,5 +57,5 @@ spx.cgcp.imputed.complete$ESG_DISCLOSURE_SCORE <- NULL
 mydb_imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
 dbWriteTable(mydb_imputed, value = spx.imputed.complete, name = "spx", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = spx.cgcp.imputed.complete, name = "spx_cgcp", overwrite = TRUE )
-dbWriteTable(mydb_imputed, value = sxxp.imputed.complet, name = "sxxp", overwrite = TRUE )
+dbWriteTable(mydb_imputed, value = sxxp.imputed.complete, name = "sxxp", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = eebp.imputed.complete, name = "eebp", overwrite = TRUE )
