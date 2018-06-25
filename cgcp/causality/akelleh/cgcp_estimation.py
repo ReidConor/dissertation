@@ -6,6 +6,9 @@ import os
 import MySQLdb
 from builtins import any as b_any
 from causality.estimation.parametric import PropensityScoreMatching
+import datetime
+
+now = str(datetime.datetime.now())
 
 def stageDbLayer():
     conn = MySQLdb.connect(host="localhost",
@@ -15,7 +18,7 @@ def stageDbLayer():
 
     cur = conn.cursor()
     drop_table = "drop table if exists `akelleh_results`;"
-    create_table = "create table akelleh_results (dataset varchar(10), treatment varchar(100), target varchar(100), results varchar(100), mm varchar(1000))"
+    create_table = "create table akelleh_results (datestamp timestamp, dataset varchar(10), treatment varchar(100), target varchar(100), results varchar(100), mm varchar(1000))"
     cur.execute(drop_table)
     cur.execute(create_table)
     conn.close()
@@ -88,10 +91,11 @@ def spx_wmOnBoard_tobin():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("spx",treatment,target,str(ATE_results),"For the American companies inside the S and P 500 index, we found a positive correlation between the percentage higher than 20pct of women in the board and the Tobins Q ratio")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"For the American companies inside the S and P 500 index, we found a positive correlation between the percentage higher than 20pct of women in the board and the Tobins Q ratio")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 def spx_indepDirFinlL_azs():
     '''
@@ -118,10 +122,11 @@ def spx_indepDirFinlL_azs():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("spx",treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 def spx_fceo_tobin():
     '''
@@ -147,10 +152,11 @@ def spx_fceo_tobin():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("spx",treatment,target,str(ATE_results),"This is my own")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"This is my own")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 
 #
@@ -181,10 +187,11 @@ def sxxp_indepDirFormerCEOBoard_tobin():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("sxxp",treatment,target,str(ATE_results),"the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobins Q")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"sxxp",treatment,target,str(ATE_results),"the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobins Q")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 def sxxp_womenBoard_tobin():
     '''
@@ -206,10 +213,11 @@ def sxxp_womenBoard_tobin():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("sxxp",treatment,target,str(ATE_results),"A large percentage of women in the board could also affect negatively the performance.")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"sxxp",treatment,target,str(ATE_results),"A large percentage of women in the board could also affect negatively the performance.")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 
 #
@@ -235,10 +243,11 @@ def eebp_ageRange_tobins():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("eebp",treatment,target,str(ATE_results),"we found that a smaller age range for the board members is positively related with the companies performance")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"we found that a smaller age range for the board members is positively related with the companies performance")
     cur.execute(query)
     conn.commit()
     conn.close()
+    print("Done")
 
 def eebp_finlL_tobins():
         '''
@@ -261,10 +270,11 @@ def eebp_finlL_tobins():
                              passwd="",
                              db="causal_results")
         cur = conn.cursor()
-        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("eebp",treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
+        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
         cur.execute(query)
         conn.commit()
         conn.close()
+        print("Done")
 
 def eebp_indepChaFCEO_azs():
         '''
@@ -286,17 +296,18 @@ def eebp_indepChaFCEO_azs():
                              passwd="",
                              db="causal_results")
         cur = conn.cursor()
-        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s');  """ % ("eebp",treatment,target,str(ATE_results),"...to be on the safe zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.")
+        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"...to be on the safe zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.")
         cur.execute(query)
         conn.commit()
         conn.close()
+        print("Done")
 
 
 
 if __name__ == "__main__":
     os.system('clear')
 
-    stageDbLayer()
+    #stageDbLayer()
     spx_wmOnBoard_tobin()
     spx_indepDirFinlL_azs()
     spx_fceo_tobin()

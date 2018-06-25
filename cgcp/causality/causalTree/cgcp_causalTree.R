@@ -1,11 +1,8 @@
+#!/usr/bin/env Rscript
 library(causalTree)
 library(RMySQL)
 
-c
-mydb.imputed.scaled <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed_scaled')
-spx.fceo <- dbReadTable(conn=mydb.imputed.scaled,name='spx_fceo')
-spx.esg <- dbReadTable(conn=mydb.imputed.scaled,name='spx_esg_disc')
-spx.cgcp <- dbReadTable(conn=mydb.imputed,name='spx_cgcp')
+mydb.causal <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_causal')
 
 #*********
 #causalTree
@@ -48,7 +45,6 @@ casual_tree <- function(dataset,target,treatment.var) {
   )
   return(result)
 }
-
 
 #*********
 #honest.causalTree
@@ -96,47 +92,72 @@ honest_casual_tree <- function(dataset,target,treatment.var) {
   
 }
 
+
 # I think the "causal effect" is the diff in means 
 # between the treated and non-treated populations
 #
 # so the bigger the diff, the more effect the treatment has
 # if its minus, the treatment casues the target var to go down and visa versa
-# in that popualtion, defined by the splits in the decision tree
+# in that population, defined by the splits in the decision tree
 
 
-spx.fceo.results <- casual_tree(spx.fceo,'Tobins.Q','Feml.CEO.or.Equiv')
-rpart.plot(spx.fceo.results$opTree)
-summary(spx.fceo.results$opTree)
 
-spx.fceo.honest.results <- honest_casual_tree(spx.fceo,'Tobins.Q','Feml.CEO.or.Equiv')
-rpart.plot(spx.fceo.honest.results$opTree)
+#*********
+# SPX
+#*********
+spx.build <- function(){
+  spx.fceo <- dbReadTable(conn=mydb.causal,name='spx_fceo')  
+  spx.esg <- dbReadTable(conn=mydb.causal,name='spx_esg_disc')
+  spx.fboard <- dbReadTable(conn=mydb.causal,name='spx_fboard')
 
-spx.esg.honest.results <- casual_tree(spx.esg,'Tobins.Q','esg_disc_score_bin')
-rpart.plot(spx.esg.honest.results$opTree)
-summary(spx.esg.honest.results$opTree)
+}
+spx.build.indepdirfincl <- function(){
+  spx.indepdirfincl <- dbReadTable(conn=mydb.causal,name='spx_indepdirfincl')
+  summary(spx.indepdirfincl)  
+  drops <- c(
+    "Tobins.Q",
+    "Tobins.Q.class",
+    #"AZS",
+    "AZS.class"
+  )
+  spx.indepdirfincl <- spx.indepdirfincl[ , !(names(spx.indepdirfincl) %in% drops)]
+  
+  spx.indepdirfincl.results <- casual_tree(spx.indepdirfincl,'AZS','Indep.Lead.Dir.Fincl..l')
+  rpart.plot(spx.indepdirfincl.results$opTree)
+  spx.indepdirfincl.results$opTree
+  summary(spx.indepdirfincl.results$opTree)
+  
+}
 
-#--------------
-drops <- c(
-  "Ticker",
-  "Clssfd.Bd.Sys",
-  "CEO.Duality",
-  "Indep.Chrprsn",
-  "Indep.Lead.Dir",
-  "Prsdg.Dir",
-  "AZS.class",
-  "FiveVarEq",          
-  "EightVarEq",
-  "Tobins.Q.class",
-  "AZS"
-)
-spx.cgcp <- spx.cgcp[ , !(names(spx.cgcp) %in% drops)]
-spx.cgcp$Feml.CEO.or.Equiv <- ifelse(spx.cgcp$Feml.CEO.or.Equiv == 'Y', 1, 0)
-spx.cgcp$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(spx.cgcp$Frmr.CEO.or.its.Equiv.on.Bd))
-summary(spx.cgcp)
-table(spx.cgcp$esg_disc_score_bin)
+#*********
+# SXXP
+#*********
+sxxp.fboard <- dbReadTable(conn=mydb.causal,name='sxxp_fboard')
 
-spx.cgcp.results <- casual_tree(spx.cgcp,'Tobins.Q','esg_disc_score_bin')
-rpart.plot(spx.cgcp.results$opTree)
-summary(spx.cgcp.results$opTree)
-spx.cgcp.results$opTree
-summary(spx.cgcp)
+
+#*********
+# EEBP
+#*********
+eebp.build <- function(){
+  eebp.agerange <- dbReadTable(conn=mydb.causal,name='eebp_agerange')
+  eebp.fl <- dbReadTable(conn=mydb.causal,name='eebp_fl')
+ 
+}
+eebp.build.indepChFmlCEO <- function(){
+  eebp.indepChFmlCEO <- dbReadTable(conn=mydb.causal,name='eebp_indepChFmlCEO')
+  summary(eebp.indepChFmlCEO)  
+  drops <- c(
+    "Tobins.Q",
+    "Tobins.Q.class",
+    "AZS",
+    "AZS.class"
+  )
+  eebp.indepChFmlCEO <- eebp.indepChFmlCEO[ , !(names(eebp.indepChFmlCEO) %in% drops)]
+  
+  eebp.indepChFmlCEO.results <- casual_tree(eebp.indepChFmlCEO,'AZS.class.Binary','Indep.Chrprsn.Feml.CEO.or.Equiv')
+  rpart.plot(eebp.indepChFmlCEO.results$opTree)
+  eebp.indepChFmlCEO.results$opTree
+  summary(eebp.indepChFmlCEO.results$opTree)
+  
+}
+
