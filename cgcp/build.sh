@@ -9,6 +9,7 @@
 export jobDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export loadDir=`cd "$jobDir"; cd load/; pwd`
 export analysisDir=`cd "$jobDir"; cd analysis; pwd`
+export causalDir=`cd "$jobDir"; cd causality/akelleh; pwd`
 
 filePermissions(){
   cd "$loadDir"
@@ -17,6 +18,9 @@ filePermissions(){
 
   cd "$analysisDir"
   chmod 755 *.R
+
+  cd "$causalDir"
+  chmod 755 *.py
 
 }
 
