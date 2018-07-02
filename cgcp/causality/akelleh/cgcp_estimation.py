@@ -283,12 +283,32 @@ def eebp_indepChaFCEO_azs():
             ...to be on the “safe” zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.
         '''
         data, types = getData("eebp_indepChFmlCEO","corp_gov_causal")
-        controlFor = stageAlgo(types)
+        #controlFor = stageAlgo(types)
+        controlFor = {
+            'P.B': 'c',
+            'Fincl..l':'c',
+            'Asset':'c',
+            'Tax':'c',
+            'P.E':'c',
+            'OPM.T12M':'c',
+            'P.EBITDA':'c',
+            'EV.EBITDA.T12M':'c',
+            'ROC':'c',
+            'ROE':'c',
+            'BOD.Age.Rng':'c',
+            'Norm.NI.to.NI.for.Cmn..':'c',
+            'Cash.Gen.Cash.Reqd':'c',
+            'Bd.Avg.Age':'c',
+            'X5Yr.Avg.Adj.ROE':'c',
+            #'Dvd.Yld':'c',
+            'EBITDA.Sh':'c',
+            'Net.Debt.to.EBITDA':'c'
+        }
         treatment = 'Indep.Chrprsn.Feml.CEO.or.Equiv'
         target = 'AZS.class.Binary'
 
         matcher = PropensityScoreMatching()
-        ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
+        ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
 
         #now write results to mysql
         conn = MySQLdb.connect(host="localhost",
@@ -308,11 +328,11 @@ if __name__ == "__main__":
     os.system('clear')
 
     #stageDbLayer()
-    spx_wmOnBoard_tobin()
-    spx_indepDirFinlL_azs()
-    spx_fceo_tobin()
-    sxxp_indepDirFormerCEOBoard_tobin()
-    sxxp_womenBoard_tobin()
-    eebp_ageRange_tobins()
-    eebp_finlL_tobins()
+    #spx_wmOnBoard_tobin()
+    #spx_indepDirFinlL_azs()
+    #spx_fceo_tobin()
+    #sxxp_indepDirFormerCEOBoard_tobin()
+    #sxxp_womenBoard_tobin()
+    #eebp_ageRange_tobins()
+    #eebp_finlL_tobins()
     eebp_indepChaFCEO_azs()
