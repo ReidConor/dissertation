@@ -1,0 +1,108 @@
+---
+title: "Corporate Goverance and Company Performance"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+\newcommand{\boxedcheckmark}
+  {{\ooalign{$\Box$\cr\hidewidth$\checkmark$\hidewidth}}}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project Goals + Status
+
+$\boxedcheckmark$ An initial goal is to acquire the dataset, whether by contacting MM or using Bloomberg terminals available in UCD Quinn and Smurfit, and reproduce some of MM’s results. 
+  
+&nbsp;&nbsp;&nbsp;&nbsp;  Done
+  
+  
+$\boxedcheckmark$	A central goal is to apply (regularized) regression, and classification-on-regression (i.e. thresholding on the real value predicted by regression) rather than straight classification, as the main analysis, and follow this with a careful discussion of the pros and cons, and the findings (e.g. correlation analysis, both linear and rank correlation). 
+
+&nbsp;&nbsp;&nbsp;&nbsp;  Done
+
+$\boxedcheckmark$	A side goal is to consider alternative features and measures of performance, beyond Z and Q. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;  Tried [Beneish M Score ](https://en.wikipedia.org/wiki/Beneish_M-Score) as a dependent variable. Various ESG variables from Bloomberg as independent variables
+
+$\Box$	A stretch goal is to investigate modern work in causality (Pearl, 2009, King et al., 2016) and attempt to apply it here. Any contribution to the task of proving causality, as opposed to correlation, would be a large contribution.
+
+&nbsp;&nbsp;&nbsp;&nbsp; Implementing [akelleh](https://github.com/akelleh/causality), and [causalTree](https://github.com/susanathey/causalTree) 
+
+
+# M\&M - Classification
+Taking the data, algorithms and hypothesis put forward by MM and replicate results. Data used as is. Results as per Table 1. 
+
+# M\&M - Regression
+Taking same data, but not thresholding on dependent variables meaning this is a regression problem. 
+
+
+# Causality
+## akelleh
+
+### Methodology - Causal DAG
+
+### Methodology - Causal Estimation
+
+M&M make 8 statements about the effects of various corporate governance features on either Tobins Q or the Altman Z Score. This is the basis for my work on causal estimation, following this guide - [https://github.com/akelleh/causality/tree/master/causality/estimation](https://github.com/akelleh/causality/tree/master/causality/estimation). The goal is to pick a treatment and effect, and measure the magnitude of the effect of the former on the latter. Uses propensity matching. 
+
+I've built a table per statement. The manipualtions I carry out to prepare each are: 
+
+* Impute the data to remove missing values. Taking just complete cases is infeasable especailly for sxxp and eebp datasets, since there are so few cases without missing data.  
+
+* Scale all columns apart from the treatment and control. Speed up algorithm runtime, seems to be justified in terms of .....
+
+
+Called using something like;
+
+```{r eval=FALSE}
+ATE_results = matcher.estimate_ATE(
+  data, 
+  treatment, 
+  target, 
+  {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, #to control for 
+  bootstrap=True
+)
+```
+
+Also includes some plotting to show how good the matching process was.
+
+For results, see Table 2. 
+
+
+## causalTree
+
+
+
+\clearpage
+
+```{r, echo=FALSE, include=FALSE}
+library(RMySQL)
+library(knitr)
+library(kableExtra)
+```
+
+
+```{r, echo=FALSE}
+mydb <- dbConnect(MySQL(), user='root', password='', dbname='mm_results')
+results <- dbReadTable(conn=mydb,name='results_avg')
+
+kable(results, caption="MM Classification Results") %>%
+  kableExtra::landscape()
+
+```
+
+
+```{r, echo=FALSE}
+mydb <- dbConnect(MySQL(), user='root', password='', dbname='causal_results')
+akelleh.results <- dbReadTable(conn=mydb,name='akelleh_results_latest')
+
+kable(akelleh.results, caption="akelleh Estimation Results") %>%
+  kableExtra::landscape()
+
+```
+
+
+
