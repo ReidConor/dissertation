@@ -5,7 +5,8 @@ library(RMySQL)
 library(glmnet)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 mydb.imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
-spx <- dbReadTable(conn=mydb.imputed,name='spx')
+mydb.imputed.scaled <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed_scaled')
+spx <- dbReadTable(conn=mydb.imputed.scaled,name='spx')
 spx.mscore <- dbReadTable(conn=mydb.imputed,name='spx_mscore')
 
 training.split=2/3
@@ -574,30 +575,34 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
   pred9.min <- predict(fit9, s=fit9$lambda.min, newx=data.reduced.test.predictors)
   pred10.min <- predict(fit10, s=fit10$lambda.min, newx=data.reduced.test.predictors)
   
-  print("-----min")
-  print (mean((data.reduced.test.target - pred0.min)^2))
-  print (mean((data.reduced.test.target - pred1.min)^2))
-  print (mean((data.reduced.test.target - pred2.min)^2))
-  print (mean((data.reduced.test.target - pred3.min)^2))
-  print (mean((data.reduced.test.target - pred4.min)^2))
-  print (mean((data.reduced.test.target - pred5.min)^2))
-  print (mean((data.reduced.test.target - pred6.min)^2))
-  print (mean((data.reduced.test.target - pred7.min)^2))
-  print (mean((data.reduced.test.target - pred8.min)^2))
-  print (mean((data.reduced.test.target - pred9.min)^2))
-  print (mean((data.reduced.test.target - pred10.min)^2))
-  print("-----1se")
-  print (mean((data.reduced.test.target - pred0.1se)^2))
-  print (mean((data.reduced.test.target - pred1.1se)^2))
-  print (mean((data.reduced.test.target - pred2.1se)^2))
-  print (mean((data.reduced.test.target - pred3.1se)^2))
-  print (mean((data.reduced.test.target - pred4.1se)^2))
-  print (mean((data.reduced.test.target - pred5.1se)^2))
-  print (mean((data.reduced.test.target - pred6.1se)^2))
-  print (mean((data.reduced.test.target - pred7.1se)^2))
-  print (mean((data.reduced.test.target - pred8.1se)^2))
-  print (mean((data.reduced.test.target - pred9.1se)^2))
-  print (mean((data.reduced.test.target - pred10.1se)^2))
+  fits <- c(
+    "min0" = c(mean((data.reduced.test.target - pred0.min)^2), fit0),
+    "min1" = c(mean((data.reduced.test.target - pred1.min)^2), fit1),
+    "min2" = c(mean((data.reduced.test.target - pred2.min)^2), fit2),
+    "min3" = c(mean((data.reduced.test.target - pred3.min)^2), fit3),
+    "min4" = c(mean((data.reduced.test.target - pred4.min)^2), fit4),
+    "min5" = c(mean((data.reduced.test.target - pred5.min)^2), fit5),
+    "min6" = c(mean((data.reduced.test.target - pred6.min)^2), fit6),
+    "min7" = c(mean((data.reduced.test.target - pred7.min)^2), fit7),
+    "min8" = c(mean((data.reduced.test.target - pred8.min)^2), fit8),
+    "min9" = c(mean((data.reduced.test.target - pred9.min)^2), fit9),
+    "min10" = c(mean((data.reduced.test.target - pred10.min)^2), fit10),
+    "1se0" = c(mean((data.reduced.test.target - pred0.1se)^2), fit0),
+    "1se1" = c(mean((data.reduced.test.target - pred1.1se)^2), fit1),
+    "1se2" = c(mean((data.reduced.test.target - pred2.1se)^2), fit2),
+    "1se3" = c(mean((data.reduced.test.target - pred3.1se)^2), fit3),
+    "1se4" = c(mean((data.reduced.test.target - pred4.1se)^2), fit4),
+    "1se5" = c(mean((data.reduced.test.target - pred5.1se)^2), fit5),
+    "1se6" = c(mean((data.reduced.test.target - pred6.1se)^2), fit6),
+    "1se7" = c(mean((data.reduced.test.target - pred7.1se)^2), fit7),
+    "1se8" = c(mean((data.reduced.test.target - pred8.1se)^2), fit8),
+    "1se9" = c(mean((data.reduced.test.target - pred9.1se)^2), fit9),
+    "1se10" = c(mean((data.reduced.test.target - pred10.1se)^2), fit10)
+  )
+  
+  for(i in fits){
+    print(i)
+  }
   
   result=list(
     "fit.lasso"=fit.lasso,
@@ -615,7 +620,9 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
     "fit9"=fit9,
     "fit10"=fit10,
     "data.reduced.train"=data.reduced.train,
-    "data.reduced.test"=data.reduced.test
+    "data.reduced.test"=data.reduced.test,
+    "min"=min,
+    "se"=se
   )
   return(result) 
   
@@ -627,6 +634,9 @@ fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min
 fit.r2 #0.764 [ish]
 #training dim - 1670  45
 #test dim - 830 45
+
+
+
 
 mscore.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx.mscore, "EightVarEq")
 coef(mscore.results$fit1)
