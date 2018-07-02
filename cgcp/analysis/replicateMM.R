@@ -6,6 +6,7 @@ library(C50)
 library(mice)
 #get data
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
+mydb.results <- dbConnect(MySQL(), user='root', password='', dbname='mm_results')
 spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
 eebp <- dbReadTable(conn=mydb,name='eebp')
@@ -78,7 +79,46 @@ adaboost <- function(dataset, target) {
     data=data.adaboost.pred$class, 
     test.actuals
   )
-  roc <- roc(test.actuals, as.numeric(data.adaboost.pred$class),direction = "<")
+  
+  
+  if (target == "AZS.class"){
+    roc <- multiclass.roc(as.numeric(test.actuals), as.numeric(as.factor(data.adaboost.pred$class)),direction = "<")
+  }else if (target == "Tobins.Q.class"){
+    roc <- roc(test.actuals, as.numeric(data.adaboost.pred$class),direction = "<")
+  }else{
+    roc <- NULL
+  }
+  
+  #write to mysql
+  target.table <- paste(deparse(substitute(dataset)),target,sep='_') 
+  target.table <- gsub("\\.", "_", target.table)
+  to.write <- data.frame(
+    list
+    (
+      format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+      "Adaboost", #algo
+      deparse(substitute(dataset)),
+      target, 
+      accuracy, #correctly classified instances
+      NA, #coverage of cases
+      confusion.caret$byClass[1], #sensitivity / precision class 0
+      confusion.caret$byClass[2], #specificity / precision class 1
+      as.numeric(roc$auc) #roc area
+    )
+  )
+  colnames(to.write) <- c(
+    "DateStamp",
+    "Algorithm",
+    "DataSet",
+    "Target",
+    "Correctly Classified Instances", 
+    "Coverage Of cases", 
+    "Precision Class 0",
+    "Precision Class 1",
+    "ROC area"
+  )
+  rownames(to.write) <- c()
+  dbWriteTable(mydb.results, value = to.write, name = "results", append = TRUE, row.names=FALSE)
   
   result=list(
      "data.reduced"=data.reduced, 
@@ -97,9 +137,11 @@ adaboost <- function(dataset, target) {
      "error.CI.ninty.five"=error.CI.ninty.five,
      "coverage.of.cases"=coverage.of.cases,
      "confusion.caret"=confusion.caret,
-     "roc"=roc
+     "roc"=roc,
+     "pred.class"=data.adaboost.pred$class
   )
   return(result)  
+  
 }
 #call adaboost on each
 spx.adaboost.tobin.results=adaboost(spx,"Tobins.Q.class")
@@ -131,6 +173,13 @@ j48 <- function(dataset, target){
   drops=drops[drops != target]#dont want to drop whatever is passed as the target
   data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
   data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
+  data.reduced$Feml.CEO.or.Equiv <- as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  data.reduced$Prsdg.Dir <- as.numeric(as.factor(data.reduced$Prsdg.Dir))
+  data.reduced$Clssfd.Bd.Sys <- as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
+  data.reduced$Indep.Lead.Dir <- as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
+  data.reduced$CEO.Duality <- as.numeric(as.factor(data.reduced$CEO.Duality))
+  data.reduced$Indep.Chrprsn <- as.numeric(as.factor(data.reduced$Indep.Chrprsn))
+  data.reduced$Frmr.CEO.or.its.Equiv.on.Bd <- as.numeric(as.factor(data.reduced$Frmr.CEO.or.its.Equiv.on.Bd))
   
   len <- length(data.reduced[,1])
   sub <- sample(1:len,len*training.split)
@@ -168,8 +217,49 @@ j48 <- function(dataset, target){
     data=tree.model.predict, 
     test.actuals
   )
-  rule.roc <- roc(test.actuals, as.numeric(rule.model.predict),direction = "<")
-  tree.roc <- roc(test.actuals, as.numeric(tree.model.predict),direction = "<")
+  
+  
+  if (target == "AZS.class"){
+    rule.roc <- multiclass.roc(test.actuals, as.numeric(as.factor(rule.model.predict)),direction = "<")
+    tree.roc <- multiclass.roc(test.actuals, as.numeric(as.factor(tree.model.predict)),direction = "<")
+  }else if (target == "Tobins.Q.class"){
+    rule.roc <- roc(test.actuals, as.numeric(rule.model.predict),direction = "<")
+    tree.roc <- roc(test.actuals, as.numeric(tree.model.predict),direction = "<")
+  }else{
+    rule.roc <- NULL
+    tree.roc <- NULL
+  }
+  
+  #write to mysql
+  target.table <- paste(deparse(substitute(dataset)),target,sep='_') 
+  target.table <- gsub("\\.", "_", target.table)
+  to.write <- data.frame(
+    list
+      (
+        format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+        "J48", #algo
+        deparse(substitute(dataset)),
+        target, 
+        tree.confusion.caret$overall[1], #correctly classified instances
+        NA, #coverage of cases
+        tree.confusion.caret$byClass[1], #sensitivity / precision class 0
+        tree.confusion.caret$byClass[2], #specificity / precision class 1
+        as.numeric(tree.roc$auc) #roc area
+      )
+  )
+  colnames(to.write) <- c(
+    "DateStamp",
+    "Algorithm",
+    "DataSet",
+    "Target",
+    "Correctly Classified Instances", 
+    "Coverage Of cases", 
+    "Precision Class 0",
+    "Precision Class 1",
+    "ROC area"
+  )
+  rownames(to.write) <- c()
+  dbWriteTable(mydb.results, value = to.write, name = "results", append = TRUE, row.names=FALSE)
   
   result=list(
    "tree.model"=tree.model,
@@ -184,7 +274,9 @@ j48 <- function(dataset, target){
    "rule.confusion.caret"=rule.confusion.caret,
    "tree.confusion.caret"=tree.confusion.caret,
    "rule.roc"=rule.roc,
-   "tree.roc"=tree.roc
+   "tree.roc"=tree.roc,
+   "target.table"=target.table,
+   "to.write"=to.write
   )
   return(result)  
   
@@ -255,7 +347,7 @@ simpleLog <- function(dataset,target){
   return(result)  
   
 }
-spx.simpleLog.results=simpleLog(spx,"Tobins.Q.class")
-View(spx.simpleLog.results$data.reduced)
-summary(spx.simpleLog.results$model)
-complete.cases(spx.simpleLog.results$data.reduced)
+#spx.simpleLog.results=simpleLog(spx,"Tobins.Q.class")
+#View(spx.simpleLog.results$data.reduced)
+#summary(spx.simpleLog.results$model)
+#complete.cases(spx.simpleLog.results$data.reduced)
