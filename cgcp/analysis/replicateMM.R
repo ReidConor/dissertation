@@ -89,37 +89,6 @@ adaboost <- function(dataset, target) {
     roc <- NULL
   }
   
-  #write to mysql
-  target.table <- paste(deparse(substitute(dataset)),target,sep='_') 
-  target.table <- gsub("\\.", "_", target.table)
-  to.write <- data.frame(
-    list
-    (
-      format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
-      "Adaboost", #algo
-      deparse(substitute(dataset)),
-      target, 
-      accuracy, #correctly classified instances
-      NA, #coverage of cases
-      confusion.caret$byClass[1], #sensitivity / precision class 0
-      confusion.caret$byClass[2], #specificity / precision class 1
-      as.numeric(roc$auc) #roc area
-    )
-  )
-  colnames(to.write) <- c(
-    "DateStamp",
-    "Algorithm",
-    "DataSet",
-    "Target",
-    "Correctly Classified Instances", 
-    "Coverage Of cases", 
-    "Precision Class 0",
-    "Precision Class 1",
-    "ROC area"
-  )
-  rownames(to.write) <- c()
-  dbWriteTable(mydb.results, value = to.write, name = "results", append = TRUE, row.names=FALSE)
-  
   result=list(
      "data.reduced"=data.reduced, 
      "model"=data.adaboost,
@@ -145,11 +114,12 @@ adaboost <- function(dataset, target) {
 }
 #call adaboost on each
 spx.adaboost.tobin.results=adaboost(spx,"Tobins.Q.class")
-spx.adaboost.altman.results=adaboost(spx,"AZS.class")
 sxxp.adaboost.tobin.results=adaboost(sxxp,"Tobins.Q.class")
-sxxp.adaboost.altman.results=adaboost(sxxp,"AZS.class")
 eebp.adaboost.tobin.results=adaboost(eebp,"Tobins.Q.class")
+spx.adaboost.altman.results=adaboost(spx,"AZS.class")
+sxxp.adaboost.altman.results=adaboost(sxxp,"AZS.class")
 eebp.adaboost.altman.results=adaboost(eebp,"AZS.class")
+
 
 
 #**********************
@@ -230,37 +200,6 @@ j48 <- function(dataset, target){
     tree.roc <- NULL
   }
   
-  #write to mysql
-  target.table <- paste(deparse(substitute(dataset)),target,sep='_') 
-  target.table <- gsub("\\.", "_", target.table)
-  to.write <- data.frame(
-    list
-      (
-        format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
-        "J48", #algo
-        deparse(substitute(dataset)),
-        target, 
-        tree.confusion.caret$overall[1], #correctly classified instances
-        NA, #coverage of cases
-        tree.confusion.caret$byClass[1], #sensitivity / precision class 0
-        tree.confusion.caret$byClass[2], #specificity / precision class 1
-        as.numeric(tree.roc$auc) #roc area
-      )
-  )
-  colnames(to.write) <- c(
-    "DateStamp",
-    "Algorithm",
-    "DataSet",
-    "Target",
-    "Correctly Classified Instances", 
-    "Coverage Of cases", 
-    "Precision Class 0",
-    "Precision Class 1",
-    "ROC area"
-  )
-  rownames(to.write) <- c()
-  dbWriteTable(mydb.results, value = to.write, name = "results", append = TRUE, row.names=FALSE)
-  
   result=list(
    "tree.model"=tree.model,
    "summary.tree.model"=summary(tree.model),
@@ -274,80 +213,315 @@ j48 <- function(dataset, target){
    "rule.confusion.caret"=rule.confusion.caret,
    "tree.confusion.caret"=tree.confusion.caret,
    "rule.roc"=rule.roc,
-   "tree.roc"=tree.roc,
-   "target.table"=target.table,
-   "to.write"=to.write
+   "tree.roc"=tree.roc
   )
   return(result)  
   
 }
 #call J48[C5.0] on each
 spx.j48.tobin.results=j48(dataset=spx,target="Tobins.Q.class")
-spx.j48.altman.results=j48(spx,"AZS.class")
 sxxp.j48.tobin.results=j48(sxxp,"Tobins.Q.class")
-sxxp.j48.altman.results=j48(sxxp,"AZS.class")
 eebp.j48.tobin.results=j48(eebp,"Tobins.Q.class")
+spx.j48.altman.results=j48(spx,"AZS.class")
+sxxp.j48.altman.results=j48(sxxp,"AZS.class")
 eebp.j48.altman.results=j48(eebp,"AZS.class")
 
 
 
+
 #**********************
-#Simple Log
+# Write Results
 #**********************
-# Runs the simple log algorithm on the given dataset
-#
-# Args:
-#   dataset: A dataframe that contains the data to run the algorithm on 
-#   
-# Returns:
-#   A number of elements of the results of the algorithm 
-simpleLog <- function(dataset,target){
-  drops <- c("Ticker",
-             "AZS.class",
-             "AZS",
-             "Tobins.Q",
-             "Tobins.Q.class")
-  drops=drops[drops != target]#dont want to drop whatever is passed as the target
-  data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
-  data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
-  
-  len <- length(data.reduced[,1])
-  sub <- sample(1:len,len*training.split)
-  
-  data.reduced[[target]]=as.factor(data.reduced[[target]])
-  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
-  
-  #impute
-  data.reduced.imp <- mice(data.reduced,threshold=1)
-  data.reduced <- complete(data.reduced.imp)
-  data.reduced <- data.reduced[complete.cases(data.reduced),]
-  
-  data.reduced.train=data.reduced[sub,]
-  data.reduced.test=data.reduced[-sub,]
-  
-  tcontrol <- trainControl(method = "cv", 
-                         number = 10, 
-                         returnResamp = "all",
-                         classProbs = TRUE, 
-                         summaryFunction = twoClassSummary)
-  model <- train(
-    target ~ ., 
-    data = data.reduced.test, 
-    method = "LMT", #which classification or regression model to use
-    trControl = tcontrol,
-    metric = "ROC", #what summary metric will be used to select the optimal model
-    preProc = c("center", "scale") #defines a pre-processing of the predictor data
-  )
-  
-  result=list(
-    "tcontrol"=tcontrol,
-    "data.reduced"=data.reduced,
-    "model"=model
-  )
-  return(result)  
-  
-}
-#spx.simpleLog.results=simpleLog(spx,"Tobins.Q.class")
-#View(spx.simpleLog.results$data.reduced)
-#summary(spx.simpleLog.results$model)
-#complete.cases(spx.simpleLog.results$data.reduced)
+#write to mysql
+to.write.spx <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "spx",
+  "Tobins.Q.class", 
+  spx.adaboost.tobin.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  spx.adaboost.tobin.results$confusion.caret$byClass[1], #sensitivity / precision class 0
+  spx.adaboost.tobin.results$confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(spx.adaboost.tobin.results$roc$auc) #roc area
+))
+colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.sxxp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "sxxp",
+  "Tobins.Q.class", 
+  sxxp.adaboost.tobin.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  sxxp.adaboost.tobin.results$confusion.caret$byClass[1], #sensitivity / precision class 0
+  sxxp.adaboost.tobin.results$confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(sxxp.adaboost.tobin.results$roc$auc) #roc area
+))
+colnames(to.write.sxxp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.eebp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "eebp",
+  "Tobins.Q.class", 
+  eebp.adaboost.tobin.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  eebp.adaboost.tobin.results$confusion.caret$byClass[1], #sensitivity / precision class 0
+  eebp.adaboost.tobin.results$confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(eebp.adaboost.tobin.results$roc$auc) #roc area
+))
+colnames(to.write.eebp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+dbWriteTable(mydb.results, value = to.write.spx, name = "tobin_q_results", overwrite = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.sxxp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.eebp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+to.write.spx <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "spx",
+  "Altman.Z",
+  spx.adaboost.altman.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  spx.adaboost.altman.results$confusion.caret$byClass[1,3], #precision class 0
+  spx.adaboost.altman.results$confusion.caret$byClass[2,3], #precision class 1
+  spx.adaboost.altman.results$confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(spx.adaboost.altman.results$roc$auc) #roc area
+))
+colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.sxxp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "sxxp",
+  "Altman.Z",
+  sxxp.adaboost.altman.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  sxxp.adaboost.altman.results$confusion.caret$byClass[1,3], #precision class 0
+  sxxp.adaboost.altman.results$confusion.caret$byClass[2,3], #precision class 1
+  sxxp.adaboost.altman.results$confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(sxxp.adaboost.altman.results$roc$auc) #roc area
+))
+colnames(to.write.sxxp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.eebp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "eebp",
+  "Altman.Z",
+  eebp.adaboost.altman.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  eebp.adaboost.altman.results$confusion.caret$byClass[1,3], #precision class 0
+  eebp.adaboost.altman.results$confusion.caret$byClass[2,3], #precision class 1
+  eebp.adaboost.altman.results$confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(eebp.adaboost.altman.results$roc$auc) #roc area
+))
+colnames(to.write.eebp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+dbWriteTable(mydb.results, value = to.write.spx, name = "altman_z_results", overwrite = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.sxxp, name = "altman_z_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.eebp, name = "altman_z_results", append = TRUE, row.names=FALSE)
+
+to.write.spx <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "spx",
+  "Tobins.Q.class",  
+  spx.j48.tobin.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  spx.j48.tobin.results$tree.confusion.caret$byClass[1], #sensitivity / precision class 0
+  spx.j48.tobin.results$tree.confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(spx.j48.tobin.results$tree.roc$auc) #roc area
+))
+colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.sxxp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "sxxp",
+  "Tobins.Q.class", 
+  sxxp.j48.tobin.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  sxxp.j48.tobin.results$tree.confusion.caret$byClass[1], #sensitivity / precision class 0
+  sxxp.j48.tobin.results$tree.confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(sxxp.j48.tobin.results$tree.roc$auc) #roc area
+))
+colnames(to.write.sxxp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.eebp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "eebp",
+  "Tobins.Q.class", 
+  eebp.j48.tobin.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  eebp.j48.tobin.results$tree.confusion.caret$byClass[1], #sensitivity / precision class 0
+  eebp.j48.tobin.results$tree.confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(eebp.j48.tobin.results$tree.roc$auc) #roc area
+))
+colnames(to.write.eebp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+dbWriteTable(mydb.results, value = to.write.spx, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.sxxp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.eebp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+
+
+to.write.spx <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "spx",
+  "Altman.Z",  
+  spx.j48.altman.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  spx.j48.altman.results$tree.confusion.caret$byClass[1,3], #precision class 0
+  spx.j48.altman.results$tree.confusion.caret$byClass[2,3], #precision class 1
+  spx.j48.altman.results$tree.confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(spx.j48.altman.results$tree.roc$auc) #roc area
+))
+colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.sxxp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "sxxp",
+  "Altman.Z", 
+  sxxp.j48.altman.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  sxxp.j48.altman.results$tree.confusion.caret$byClass[1,3], #precision class 0
+  sxxp.j48.altman.results$tree.confusion.caret$byClass[2,3], #precision class 1
+  sxxp.j48.altman.results$tree.confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(sxxp.j48.altman.results$tree.roc$auc) #roc area
+))
+colnames(to.write.sxxp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.eebp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "eebp",
+  "Altman.Z", 
+  eebp.j48.altman.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  eebp.j48.altman.results$tree.confusion.caret$byClass[1,3], #precision class 0
+  eebp.j48.altman.results$tree.confusion.caret$byClass[2,3], #precision class 1
+  eebp.j48.altman.results$tree.confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(eebp.j48.altman.results$tree.roc$auc) #roc area
+))
+colnames(to.write.eebp) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+dbWriteTable(mydb.results, value = to.write.spx, name = "altman_z_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.sxxp, name = "altman_z_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.eebp, name = "altman_z_results", append = TRUE, row.names=FALSE)
+

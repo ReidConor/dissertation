@@ -31,13 +31,17 @@ $\Box$	A stretch goal is to investigate modern work in causality (Pearl, 2009, K
 
 &nbsp;&nbsp;&nbsp;&nbsp; Implementing [akelleh](https://github.com/akelleh/causality), and [causalTree](https://github.com/susanathey/causalTree) 
 
+\clearpage
 
 # M\&M - Classification
-Taking the data, algorithms and hypothesis put forward by MM and replicate results. Data used as is. Results as per Table 1. 
+Taking the data, algorithms and hypothesis put forward by MM and replicate results. Data used as is or with manipulations made by M&m. Results as per Table 1 and 2. 
 
 # M\&M - Regression
-Taking same data, but not thresholding on dependent variables meaning this is a regression problem. 
+Taking same data, but not thresholding on dependent variables leaving it as a regression problem.
 
+
+
+\clearpage
 
 # Causality
 ## akelleh
@@ -87,9 +91,15 @@ library(kableExtra)
 
 ```{r, echo=FALSE}
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='mm_results')
-results <- dbReadTable(conn=mydb,name='results_avg')
+results.tobin <- dbReadTable(conn=mydb,name='tobin_q_results')
+results.altman <- dbReadTable(conn=mydb,name='altman_z_results')
+results.tobin$DateStamp <- NULL
+results.altman$DateStamp <- NULL
 
-kable(results, caption="MM Classification Results") %>%
+kable(results.tobin, caption="MM Classification Results - Tobins Q as target") %>%
+  kableExtra::landscape()
+
+kable(results.altman, caption="MM Classification Results - Altman Z as target") %>%
   kableExtra::landscape()
 
 ```
