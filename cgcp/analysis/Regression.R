@@ -6,8 +6,10 @@ library(glmnet)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 mydb.imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
 mydb.imputed.scaled <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed_scaled')
+
 spx <- dbReadTable(conn=mydb.imputed.scaled,name='spx')
 spx.mscore <- dbReadTable(conn=mydb.imputed,name='spx_mscore')
+spx.ceo.comp <- dbReadTable(conn=mydb.imputed,name='spx_ceo_comp')
 
 training.split=2/3
 #multiple linear regression
@@ -600,9 +602,9 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
     "1se10" = c(mean((data.reduced.test.target - pred10.1se)^2), fit10)
   )
   
-  for(i in fits){
-    print(i)
-  }
+  #for(i in fits){
+  #  print(i)
+  #}
   
   result=list(
     "fit.lasso"=fit.lasso,
@@ -621,8 +623,7 @@ regLinearRegressionMultiAlphaLamdbaImputedMice <- function(dataset, target){
     "fit10"=fit10,
     "data.reduced.train"=data.reduced.train,
     "data.reduced.test"=data.reduced.test,
-    "min"=min,
-    "se"=se
+    "min"=min
   )
   return(result) 
   
@@ -635,8 +636,8 @@ fit.r2 #0.764 [ish]
 #training dim - 1670  45
 #test dim - 830 45
 
-
-
+tobin.q.ceo.comp.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx.ceo.comp, "Tobins.Q")
+coef(tobin.q.ceo.comp.results$fit10)
 
 mscore.results=regLinearRegressionMultiAlphaLamdbaImputedMice(spx.mscore, "EightVarEq")
 coef(mscore.results$fit1)
