@@ -163,3 +163,43 @@ dbWriteTable(
   overwrite = TRUE,
   row.names=FALSE
 ) 
+
+
+
+
+
+
+
+
+
+
+
+
+# CEO Comp
+#
+#
+#
+#
+#
+#
+spx.ceo.comp <- dbReadTable(conn=mydb,name='spx_ceo_comp')
+spx.ceo.comp <- spx.ceo.comp[,c("Ticker","X2014")]
+spx.ceo.comp <- spx.ceo.comp[complete.cases(spx.ceo.comp),]
+spx.ceo.comp$Ticker <- gsub(" ", "", spx.ceo.comp$Ticker, fixed = TRUE)
+colnames(spx.ceo.comp) <- c("Ticker","TotalCeoComp")
+
+spx <- dbReadTable(conn=mydb.processed,name='spx')
+spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
+
+to.write <- merge(x=spx, y=spx.ceo.comp, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+summary(to.write)
+
+dbWriteTable(
+  mydb.processed, 
+  value = to.write, 
+  name = "spx_ceo_comp", 
+  overwrite = TRUE,
+  row.names=FALSE
+) 
+
+

@@ -76,5 +76,7 @@ main(){
   load spx_csr.csv
   load spx_mscore.csv
 
+  load spx_ceo_comp.csv
+
 }
 main

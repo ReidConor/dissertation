@@ -13,6 +13,7 @@ drop table if exists spx_cash_flow_per_employee;
 drop table if exists spx_ghg_scope_1;
 drop table if exists spx_mscore;
 drop table if exists spx_csr;
+drop table if exists spx_ceo_comp;
 
 create table spx (
   `Ticker` varchar(100) NOT NULL,
@@ -296,4 +297,17 @@ create table spx_csr (
   `2014` double DEFAULT NULL,
   `2015` double DEFAULT NULL,
   `2016` double DEFAULT NULL
+);
+
+create table spx_ceo_comp (
+  `Ticker` varchar(100) NOT NULL,
+  `Variable` varchar(500) NOT NULL,
+  `2010` double DEFAULT NULL,
+  `2011` double DEFAULT NULL,
+  `2012` double DEFAULT NULL,
+  `2013` double DEFAULT NULL,
+  `2014` double DEFAULT NULL,
+  `2015` double DEFAULT NULL,
+  `2016` double DEFAULT NULL,
+  `2017` double DEFAULT NULL
 );
