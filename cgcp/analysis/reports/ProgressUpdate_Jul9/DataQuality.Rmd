@@ -1,0 +1,209 @@
+---
+title: "Corporate Goverance and Company Performance"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Missing Values & Variable Importance from adaboost
+
+```{r cars, echo=FALSE, include=FALSE}
+library(RMySQL)
+library(dplyr)
+mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
+spx <- dbReadTable(conn=mydb,name='spx')
+sxxp <- dbReadTable(conn=mydb,name='sxxp')
+eebp <- dbReadTable(conn=mydb,name='eebp')
+```
+
+## SPX
+```{r}
+dim(spx)
+dim(spx[complete.cases(spx), ])
+```
+
+Which columns have the most nulls
+<!-- Define the adaboost function -->
+```{r, echo=FALSE, include=FALSE}
+library(RMySQL)
+library(adabag)
+library(pROC)
+library(C50)
+library(mice)
+adaboost <- function(dataset, target) {
+  set.seed(1)
+  training.split <- 2/3
+  drops <- c("Ticker",
+             "AZS.class",
+             "AZS",
+             "Tobins.Q",
+             "Tobins.Q.class")
+  drops=drops[drops != target]#dont want to remove whatever is passed as the target
+  data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
+  data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
+  
+  data.reduced$Feml.CEO.or.Equiv=as.numeric(as.factor(data.reduced$Feml.CEO.or.Equiv))
+  data.reduced$Prsdg.Dir=as.numeric(as.factor(data.reduced$Prsdg.Dir))
+  data.reduced$Clssfd.Bd.Sys=as.numeric(as.factor(data.reduced$Clssfd.Bd.Sys))
+  data.reduced$Indep.Lead.Dir=as.numeric(as.factor(data.reduced$Indep.Lead.Dir))
+  data.reduced$CEO.Duality=as.numeric(as.factor(data.reduced$CEO.Duality))
+  data.reduced$Indep.Chrprsn=as.numeric(as.factor(data.reduced$Indep.Chrprsn))
+  data.reduced$Frmr.CEO.or.its.Equiv.on.Bd=as.numeric(as.factor(data.reduced$Frmr.CEO.or.its.Equiv.on.Bd))
+  
+  data.reduced[[target]]=as.factor(data.reduced[[target]])
+  colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  
+  len <- length(data.reduced[,1])
+  sub <- sample(1:len,len*training.split)
+  mfinal <- 100 #default is 100
+  maxdepth <- 30 #30 is max
+  data.reduced<-data.frame(data.reduced)
+  tcontrol <- trainControl(method="cv", number=10)
+  data.adaboost <- boosting(target~., 
+                           data=data.reduced[sub, ], 
+                           boos=TRUE, 
+                           mfinal=mfinal,
+                           coeflearn="Freund" #used in the calc of alpha, mm uses freund i think
+                           ,control=rpart.control(maxdepth=maxdepth) #not sure i need this 
+                           ,trControl=train_control
+  )
+  data.adaboost.pred <- predict.boosting(data.adaboost,newdata=data.reduced[-sub, ])
+  errorevol(data.adaboost,newdata=data.reduced[sub, ])->evol.train
+  errorevol(data.adaboost,newdata=data.reduced[-sub, ])->evol.test
+  
+  var.importance <- data.frame(data.adaboost$importance)
+  pred.error <- data.adaboost.pred$error
+  accuracy <- 1 - pred.error
+  test.length <- len-(len*training.split)
+  training.length <- len*training.split
+  error.CI.ninty.five <- c(
+    pred.error + (1.96 * sqrt(pred.error * (1 - pred.error)) / test.length),
+    pred.error - (1.96 * sqrt(pred.error * (1 - pred.error)) / test.length)
+  )
+  coverage.of.cases <- c()
+  test.actuals <- data.reduced[-sub, ]$target
+  confusion.caret <- confusionMatrix(
+    data=data.adaboost.pred$class, 
+    test.actuals
+  )
+  roc <- roc(test.actuals, as.numeric(data.adaboost.pred$class),direction = "<")
+  
+  result=list(
+     "data.reduced"=data.reduced, 
+     "model"=data.adaboost,
+     "model.pred"=data.adaboost.pred,
+     "confusion"=data.adaboost.pred$confusion,
+     "error"=data.adaboost.pred$error,
+     "evol.train"=evol.train,
+     "evol.test"=evol.test,
+     "var.importance"=var.importance,
+     "pred.error"=pred.error,
+     "training.length"=training.length,
+     "test.length"=test.length,
+     "test.actuals"=test.actuals,
+     "accuracy"=accuracy,
+     "error.CI.ninty.five"=error.CI.ninty.five,
+     "coverage.of.cases"=coverage.of.cases,
+     "confusion.caret"=confusion.caret,
+     "roc"=roc
+  )
+  return(result)  
+}
+```
+
+<!-- Call it and create a df of vars and importance -->
+```{r, echo=FALSE, include=FALSE}
+spx.adaboost.tobin.results=adaboost(spx,"Tobins.Q.class")
+spx.imp.df <- data.frame(spx.adaboost.tobin.results$model$importance)
+colnames(spx.imp.df) <- c("Importance")
+spx.imp.df <- add_rownames(spx.imp.df, "Var")
+```
+
+<!-- Get a df of how much missing there is per col -->
+```{r, echo=FALSE, include=FALSE}
+spx.missing.df <- data.frame(sapply(spx, function(x) sum(is.na(x))))
+colnames(spx.missing.df) <- c("Null.Count")
+spx.missing.df <- add_rownames(spx.missing.df, "Var")
+```
+
+<!-- Merge the two, output top X rows by missing values -->
+```{r}
+spx.imp.missing <- merge(spx.missing.df,spx.imp.df,by=c("Var"))
+tail(spx.imp.missing[order(spx.imp.missing$Null.Count),],24)
+summary(spx.imp.missing$Importance)
+summary(spx.imp.missing$Null.Count)
+```
+
+
+\newpage
+## SXXP
+```{r}
+dim(sxxp)
+dim(sxxp[complete.cases(spx), ])
+```
+
+Which columns have the most nulls
+<!-- Define the adaboost function -->
+<!-- Not needed -->
+
+<!-- Call it and create a df of vars and importance -->
+```{r, echo=FALSE, include=FALSE}
+sxxp.adaboost.tobin.results=adaboost(sxxp,"Tobins.Q.class")
+sxxp.imp.df <- data.frame(sxxp.adaboost.tobin.results$model$importance)
+colnames(sxxp.imp.df) <- c("Importance")
+sxxp.imp.df <- add_rownames(sxxp.imp.df, "Var")
+```
+
+<!-- Get a df of how much missing there is per col -->
+```{r, echo=FALSE, include=FALSE}
+sxxp.missing.df <- data.frame(sapply(sxxp, function(x) sum(is.na(x))))
+colnames(sxxp.missing.df) <- c("Null.Count")
+sxxp.missing.df <- add_rownames(sxxp.missing.df, "Var")
+```
+
+<!-- Merge the two, output top X rows by missing values -->
+```{r}
+sxxp.imp.missing <- merge(sxxp.missing.df,sxxp.imp.df,by=c("Var"))
+tail(sxxp.imp.missing[order(sxxp.imp.missing$Null.Count),],25)
+summary(sxxp.imp.missing$Importance)
+summary(sxxp.imp.missing$Null.Count)
+```
+
+
+\newpage
+## EEBP
+```{r}
+dim(eebp)
+dim(eebp[complete.cases(eebp), ])
+```
+
+Which columns have the most nulls
+<!-- Define the adaboost function -->
+<!-- Not needed -->
+
+<!-- Call it and create a df of vars and importance -->
+```{r, echo=FALSE, include=FALSE}
+eebp.adaboost.tobin.results=adaboost(eebp,"Tobins.Q.class")
+eebp.imp.df <- data.frame(eebp.adaboost.tobin.results$model$importance)
+colnames(eebp.imp.df) <- c("Importance")
+eebp.imp.df <- add_rownames(eebp.imp.df, "Var")
+```
+
+<!-- Get a df of how much missing there is per col -->
+```{r, echo=FALSE, include=FALSE}
+eebp.missing.df <- data.frame(sapply(eebp, function(x) sum(is.na(x))))
+colnames(eebp.missing.df) <- c("Null.Count")
+eebp.missing.df <- add_rownames(eebp.missing.df, "Var")
+```
+
+<!-- Merge the two, output top X rows by missing values -->
+```{r}
+eebp.imp.missing <- merge(eebp.missing.df,eebp.imp.df,by=c("Var"))
+tail(eebp.imp.missing[order(eebp.imp.missing$Null.Count),],25)
+summary(eebp.imp.missing$Importance)
+summary(eebp.imp.missing$Null.Count)
+```
