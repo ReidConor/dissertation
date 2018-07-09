@@ -1,0 +1,19 @@
+TODO
+----
+Go over methods of variable selection - PCA
+
+Read back over akelleh and make sure I know what its doing
+
+Meet with James, re-evaluate tasks
+
+Subset variables down to those listed in appendix A
+
+rerun mm replication to see if the above improves things
+	- it doesnt
+	- better off including everything in terms of numbers
+	- but less model complexity by subsetting
+
+take a cut of variables that are important in the class / reg stage
++ and use them in the causal stage
+
+

@@ -1,0 +1,4 @@
+TODO
+----
+
+Write to MySQL the diff between subsetting / not on appendix A vars?
