@@ -11,6 +11,10 @@ spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
 eebp <- dbReadTable(conn=mydb,name='eebp')
 
+#spx <- dbReadTable(conn=mydb,name='spx_sub_app_a')
+#sxxp <- dbReadTable(conn=mydb,name='sxxp_sub_app_a')
+#eebp <- dbReadTable(conn=mydb,name='eebp_sub_app_a')
+
 training.split=2/3 #proportion of data that will be dedicated to training data subsets 
 
 #**********************
@@ -232,6 +236,42 @@ eebp.j48.altman.results=j48(eebp,"AZS.class")
 #**********************
 # Write Results
 #**********************
+#write important variables
+library(data.table)
+spx.tobin.imp <- data.frame(spx.adaboost.tobin.results$var.importance) 
+spx.tobin.imp <- setDT(spx.tobin.imp, keep.rownames = TRUE)[]
+colnames(spx.tobin.imp) <- c("Var","Imp")
+spx.tobin.imp.head <- head(spx.tobin.imp[order(-spx.tobin.imp$Imp),],10)
+dbWriteTable(mydb.results, value = spx.tobin.imp.head, name = "spx_tobin_q_imp_vars", overwrite = TRUE, row.names=FALSE)
+spx.altman.imp <- data.frame(spx.adaboost.altman.results$var.importance) 
+spx.altman.imp <- setDT(spx.altman.imp, keep.rownames = TRUE)[]
+colnames(spx.altman.imp) <- c("Var","Imp")
+spx.altman.imp.head <- head(spx.altman.imp[order(-spx.altman.imp$Imp),],10)
+dbWriteTable(mydb.results, value = spx.altman.imp.head, name = "spx_altman_imp_vars", overwrite = TRUE, row.names=FALSE)
+
+sxxp.tobin.imp <- data.frame(sxxp.adaboost.tobin.results$var.importance) 
+sxxp.tobin.imp <- setDT(sxxp.tobin.imp, keep.rownames = TRUE)[]
+colnames(sxxp.tobin.imp) <- c("Var","Imp")
+sxxp.tobin.imp.head <- head(sxxp.tobin.imp[order(-sxxp.tobin.imp$Imp),],10)
+dbWriteTable(mydb.results, value = sxxp.tobin.imp.head, name = "sxxp_tobin_q_imp_vars", overwrite = TRUE, row.names=FALSE)
+sxxp.altman.imp <- data.frame(sxxp.adaboost.altman.results$var.importance) 
+sxxp.altman.imp <- setDT(sxxp.altman.imp, keep.rownames = TRUE)[]
+colnames(sxxp.altman.imp) <- c("Var","Imp")
+sxxp.altman.imp.head <- head(sxxp.altman.imp[order(-sxxp.altman.imp$Imp),],10)
+dbWriteTable(mydb.results, value = sxxp.altman.imp.head, name = "sxxp_altman_imp_vars", overwrite = TRUE, row.names=FALSE)
+
+eebp.tobin.imp <- data.frame(eebp.adaboost.tobin.results$var.importance) 
+eebp.tobin.imp <- setDT(eebp.tobin.imp, keep.rownames = TRUE)[]
+colnames(eebp.tobin.imp) <- c("Var","Imp")
+eebp.tobin.imp.head <- head(eebp.tobin.imp[order(-eebp.tobin.imp$Imp),],10)
+dbWriteTable(mydb.results, value = eebp.tobin.imp.head, name = "eebp_tobin_q_imp_vars", overwrite = TRUE, row.names=FALSE)
+eebp.altman.imp <- data.frame(eebp.adaboost.altman.results$var.importance) 
+eebp.altman.imp <- setDT(eebp.altman.imp, keep.rownames = TRUE)[]
+colnames(eebp.altman.imp) <- c("Var","Imp")
+eebp.altman.imp.head <- head(eebp.altman.imp[order(-eebp.altman.imp$Imp),],10)
+dbWriteTable(mydb.results, value = eebp.altman.imp.head, name = "eebp_altman_imp_vars", overwrite = TRUE, row.names=FALSE)
+
+
 #write to mysql
 to.write.spx <- data.frame(list (
   format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),

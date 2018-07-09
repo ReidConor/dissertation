@@ -4,14 +4,16 @@
 library(RMySQL)
 library(glmnet)
 mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
+mydb.complete <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_complete_cases')
 mydb.imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
 mydb.results <- dbConnect(MySQL(), user='root', password='', dbname='regression_results')
 
+spx.complete <- dbReadTable(conn=mydb.complete,name='spx')
 spx <- dbReadTable(conn=mydb.imputed,name='spx')
 sxxp <- dbReadTable(conn=mydb.imputed,name='sxxp')
 eebp <- dbReadTable(conn=mydb.imputed,name='eebp')
 spx.ceo.comp <- dbReadTable(conn=mydb.imputed,name='spx_ceo_comp')
-spx.mscore <- dbReadTable(conn=mydb.processed,name='spx_mscore')
+spx.mscore <- dbReadTable(conn=mydb.imputed,name='spx_mscore')
 
 training.split=2/3
 #multiple linear regression
@@ -81,7 +83,7 @@ regLinearRegressionMultiAlphaLamdba_v2 <- function(dataset, target){
   
   drops <- drops[drops != target]#dont want to remove whatever is passed as the target
   data.reduced <- dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
-  View(data.reduced)
+  #View(data.reduced)
   data.reduced <- data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
   colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
   data.reduced <- data.frame(data.reduced)
@@ -257,19 +259,30 @@ regLinearRegressionMultiAlphaLamdba_v2 <- function(dataset, target){
   
 }
 #regular spx with tobin as target
+spx.complete.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "Tobins.Q")
+spx.complete.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "AZS")
 spx.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx, "Tobins.Q")
 spx.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx, "AZS")
 sxxp.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(sxxp, "Tobins.Q")
 sxxp.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(sxxp, "AZS")
 eebp.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(eebp, "Tobins.Q")
 eebp.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(eebp, "AZS")
-
+spx.mscore.eight.results = regLinearRegressionMultiAlphaLamdba_v2(spx.mscore, "EightVarEq")
+spx.mscore.five.results = regLinearRegressionMultiAlphaLamdba_v2(spx.mscore, "FiveVarEq")
 
 regression.results <- data.frame()
+spx.complete.tobin <- data.frame("spx - complete cases","tobins.q",as.numeric(spx.complete.tobin.q.results$r2[[which.max(spx.complete.tobin.q.results$r2)]]))
+colnames(spx.complete.tobin) <- c("dataset", "target", "r2")
+spx.complete.azs <- data.frame("spx - complete cases","asz",as.numeric(spx.complete.altman.z.results$r2[[which.max(spx.complete.altman.z.results$r2)]]))
+colnames(spx.complete.azs) <- c("dataset", "target", "r2")
 spx.tobin <- data.frame("spx","tobins.q",as.numeric(spx.tobin.q.results$r2[[which.max(spx.tobin.q.results$r2)]]))
 colnames(spx.tobin) <- c("dataset", "target", "r2")
 spx.azs <- data.frame("spx","asz",as.numeric(spx.altman.z.results$r2[[which.max(spx.altman.z.results$r2)]]))
 colnames(spx.azs) <- c("dataset", "target", "r2")
+spx.mscore.eight <- data.frame("spx","MScore-EightVar",as.numeric(spx.mscore.eight.results$r2[[which.max(spx.mscore.eight.results$r2)]]))
+colnames(spx.mscore.eight) <- c("dataset", "target", "r2")
+spx.mscore.five <- data.frame("spx","MScore-FiveVar",as.numeric(spx.mscore.five.results$r2[[which.max(spx.mscore.five.results$r2)]]))
+colnames(spx.mscore.five) <- c("dataset", "target", "r2")
 sxxp.tobin <- data.frame("sxxp","tobins.q",sxxp.tobin.q.results$r2[[which.max(sxxp.tobin.q.results$r2)]])
 colnames(sxxp.tobin) <- c("dataset", "target", "r2")
 sxxp.azs <- data.frame("sxxp","asz",sxxp.altman.z.results$r2[[which.max(sxxp.altman.z.results$r2)]])
@@ -280,8 +293,12 @@ eebp.azs <- data.frame("eebp","asz",eebp.altman.z.results$r2[[which.max(eebp.alt
 colnames(eebp.azs) <- c("dataset", "target", "r2")
 regression.results <- rbind(
   regression.results,
+  spx.complete.tobin,
+  spx.complete.azs,
   spx.tobin,
   spx.azs,
+  spx.mscore.eight,
+  spx.mscore.five,
   sxxp.tobin,
   sxxp.azs,
   eebp.tobin,
@@ -289,20 +306,9 @@ regression.results <- rbind(
 )
 dbWriteTable(mydb.results, value = regression.results, name = "glmnet_results", overwrite = TRUE, row.names=FALSE)
 
-
-
-
 #tobin as target with ceo comp
 tobin.q.ceo.comp.results=regLinearRegressionMultiAlphaLamdba_v2(spx.ceo.comp, "Tobins.Q")
 tobin.q.ceo.comp.results$r2[[which.max(tobin.q.ceo.comp.results$r2)]]
 
-
-
 #mscore as target regression
 #mscore data hasnt been matched onto the full spx dataset so need to do that before feeding into algo
-mscore.results = regLinearRegressionMultiAlphaLamdba_v2(spx.mscore, "EightVarEq")
-
-coef(mscore.results$fit1)
-fit <- mscore.results$fit9
-fit.r2 <- fit$glmnet.fit$dev.ratio[which(fit$glmnet.fit$lambda == fit$lambda.min)]
-fit.r2 #0.2603585...terrible
