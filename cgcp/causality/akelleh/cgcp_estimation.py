@@ -71,19 +71,19 @@ def spx_wmOnBoard_tobin():
     matcher = PropensityScoreMatching()
     ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
 
-    #matcher.check_support(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
+    matcher.check_support(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
 
-    #print("")
-    #print("Balance before matching")
-    #print(matcher.assess_balance(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
-    #print ("")
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print ("")
 
-    #data = matcher.score(data, assignment='X..Women.on.Bd', confounder_types={'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
-    #treated, control = matcher.match(data, assignment='X..Women.on.Bd')
-    #print("")
-    #print("Balance after matching")
-    #print(matcher.assess_balance(treated.append(control), 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
-    #print ("")
+    data = matcher.score(data, assignment='X..Women.on.Bd', confounder_types={'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
+    treated, control = matcher.match(data, assignment='X..Women.on.Bd')
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print ("")
 
     #now write results to mysql
     conn = MySQLdb.connect(host="localhost",
@@ -328,11 +328,11 @@ if __name__ == "__main__":
     os.system('clear')
 
     #stageDbLayer()
-    #spx_wmOnBoard_tobin()
+    spx_wmOnBoard_tobin()
     #spx_indepDirFinlL_azs()
     #spx_fceo_tobin()
     #sxxp_indepDirFormerCEOBoard_tobin()
     #sxxp_womenBoard_tobin()
     #eebp_ageRange_tobins()
     #eebp_finlL_tobins()
-    eebp_indepChaFCEO_azs()
+    #eebp_indepChaFCEO_azs()

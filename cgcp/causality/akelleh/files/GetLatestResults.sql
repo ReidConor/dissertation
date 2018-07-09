@@ -4,7 +4,8 @@ select
   a.dataset,
   a.treatment,
   a.target,
-  a.results
+  a.results,
+  a.mm
 from akelleh_results a
 inner join (
   select

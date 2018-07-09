@@ -15,7 +15,7 @@ def getData(table):
     conn = MySQLdb.connect(host="localhost",
                          user="root",
                          passwd="",
-                         db="corp_gov_imputed_scaled")
+                         db="corp_gov_causal")
 
     data = pd.read_sql("SELECT * FROM " + table, conn)
     data_types = pd.read_sql("describe " + table, conn)
@@ -58,8 +58,10 @@ if __name__ == "__main__":
     print(algo_var_types)
 
     try:
+        algo_var_types = {'Tobins.Q':'c', 'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}
         algo_results = runSearch(data,algo_var_types)
         pprint(algo_results)
-        os.system('say "akelleh : success "')
+        #os.system('say "akelleh : success "')
     except:
-        os.system('say "akelleh : failure"')
+        print("failed")
+        #os.system('say "akelleh : failure"')
