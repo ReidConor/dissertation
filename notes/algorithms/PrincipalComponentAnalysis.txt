@@ -1,0 +1,39 @@
+Principal Component Analysis
+-----------
+Statistical procedure to convert a set of observations of possibly correlated variables into a set of linearly uncorrelated variables called principal components
+designed such that the first component accounts for as much of the variability in the data as possible
+each successive one has the highest variable possible under the constraint that it is orthogonal (ie perpendicular in vector space) to the preceding components 
+the resulting vectors are an uncorrelated orthogonal basis set
+it is sensitive to the relative scaling of the original variables
+
+> http://files.isec.pt/DOCUMENTOS/SERVICOS/BIBLIO/Documentos%20de%20acesso%20remoto/Principal%20components%20analysis.pdf
+> 1. Introduction 
+PCA provides a approximation of a data table / matrix, X in terms of the product of two small matrices T and P`
+T and P` capture the essential data patterns of X
+plotting the columns of T gives a picture of the dominant "object patterns"
+plotting the rows of P` shows the complementary "variable patterns"
+pca originally aimed to find "lines and planes of closest fit to systems of points in space"
+pca is not the same (although is similar to) factor analysis (fa)
+
+
+> 2. Problem Definition for Multivariate Data
+data matrix / table denoted by X
+N rows are referred to as objects (ie the samples etc) 
+K columns are termed "variables" or measurements made on the objects 
+some of the goals of pca are
+	data reduction 
+	variable selection 
+	outlier detection
+
+
+
+
+> 9. Data Pre-Treatment
+as pca is a least squares method, outliers severely influence the model
+so you need to remove them, using "initial PC plots)
+also, making the data matrix more centrally distributed is a good thing
+scaling should also be done
+variables with large variances have large loadings in PCA, which is a type of bias
+be careful with variables with very little variance though
+if that variation is noise rather than signal, then that noise will be amplified and have a greater influence
+in terms of missing values, you can either guess a value or use a PC algo that can handle missing values

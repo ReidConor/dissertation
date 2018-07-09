@@ -1,0 +1,205 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww19000\viewh19020\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 *********\
+** Title : Causal inference in statistics : An Overview\
+** Author : Judea Pearl\
+** Year : 2009\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 *********\
+\
+
+\b Dict\
+
+\b0 counterfactual - what would have happened if the treatment was different / relating to what has not happened or is not the case\
+symbiosis - close and long-term biological interaction between two different biological organisms [so interaction over time?]\
+non-parametric - nonparametric statistics refers to a method in which the data is not required to fit a normal distribution 
+\b \
+
+\b0 sem - structural equation modelling\
+ \
+\
+
+\b TOC\
+Abstract\
+Section 1 - Intro\
+Section 2 - From Association to Causation \
+Section 3 - Structural Models, Diagrams, Causal Effects and Counterfactuals\
+
+\b0 \
+\
+\
+\
+
+\b Abstract
+\b0 \
+underlines the shifts that must be undertaken in moving from traditional statistical analysis to casual analysis of multivariate data\
+special emphasis is placed on the assumptions that underly all cause inferences, and the language used in formulating them\
+as well as the conditional nature of all causal and counterfactual claims, and the methods that have been developed for assessment of such claims\
+this paper surveys the development of math tools for inferring from data and assumptions the answers to three types of causal queries\
+	1. queries about the effects of potential interventions \
+	2. queries about probabilities of counterfactuals \
+	3. queries about direct and indirect effects\
+\
+\
+\
+
+\b Section 1 - Intro
+\b0 \
+advances in casual analysis include \
+	1. counterfactual analysis\
+	2. nonparametric structural equations\
+	3. graphical models\
+	4. symbiosis between counterfactual and graphical methods\
+this survey aims to make the above more accessible, by \
+	1. contrasting causal analysis with standard statistical analysis	2. presenting a unifying theory called \'92structural\'92 within which most aspects of causation can be formulated / analyse and compared\
+	3. presenting a set of simple tools for solving a wide variety of casual problems\
+	4. demonstrating how former approaches to causal analysis emerge as special cases of general structural theory\
+\
+\
+\
+
+\b Section 2 - From Association to Causation\
+
+\b0 the aim of standard statistical analysis like regression / estimation is to assess the parameters of a distribution from samples drawn from that distribution \
+you then use those parameters to infer how variables interact and to establish associations, updating with new data\
+this is fine as long as the experimental conditions remain the same\
+casual analysis goes further, aiming to infer not only probabilities under static conditions, but also the dynamics of beliefs under changing conditions\
+an example being induced treatments \
+laws of probability theory do not dictate how one property of a distribution ought to change when another property is modified\
+causal analysis identifies relationships that remain invariant when external conditions change\
+behind every causal conclusion there must lie some causal assumptions that is not testable in observational studies\'85???\
+\
+demarkation line that makes a distinction between associational and causal concepts\
+** an associational concept is any relationship that can be defined in terms of a joint distribution of observed variables [correlation, regression, conditional indep]\
+** a causal concept is any relationship that cannot be defined from the distribution alone [influence, effect, confounding, disturbance, interventions]\
+the former can be defined in terms of distribution functions, latter can\'92t\
+\
+	side note, illustration of a confounding variable (age)\
+\
+			  age\
+			^	|\
+			|	|\
+			|	v\
+	activity level \'97\'97> weight gain\
+\
+confounding bias cannot be detected or corrected by statistical methods alone\
+one must make judgmental assumptions regarding casual relationships in the problem before an adjustment (like stratification) can safety correct for confounding bias\
+new language is needed, to distinguish eg \'93symptoms cause disease\'94 with \'93symptoms are associated with disease\'94\
+\
+two requirements above make it difficult for casual analysis to be accepted by statisticians	1. commence causal analysis with untested (ie using frequency analysis in non-experimental data), theoretical or judgemental based assumptions\
+	2. to extend the syntax of probability calculus \
+associational assumptions are testable given a sufficiently large small sample and measurement\
+causal assumptions cannot be verified unless one resorts to experimental control\
+think of bayesian analysis\'85priors are built into the model but the sensitivity of priors diminishes with sample size. they remain the same size with priors to causal analysis\
+\
+\
+ \
+\
+
+\b Section 3 - Structural models, diagrams, causal effects and counterfactuals
+\b0 \
+a conception of causation worthy of the title of a theory must be able to \
+	1. represent causal questions in some math language\
+	2. provide a precise language for communicating assumptions under which the questions need to be answered \
+	3. provide a systematic way of answering at least some of these questions and labelling others unanswerable\
+	4. provide a method of determining what assumptions or new measurements would be needed to answer the unanswerable questions\
+a general theory must encompass the above, and also embrace all other theory or method found useful in causation\
+the structural theory presented here satisfies the criteria above\
+\
+
+\i structural equation models
+\i0 \
+how do we understand that symptoms do not cause diseases? \
+take for example (X is a disease,  Y is the symptom)\
+	
+\f1\fs26\fsmilli13333 \cf2 \expnd0\expndtw0\kerning0
+y = \uc0\u946 x + u
+\fs18\fsmilli9333 \dn3 Y 
+\fs24 \up0 \
+
+\f0 \cf0 \kerning1\expnd0\expndtw0 where \
+	x is the severity of the disease\
+	y is the severity of the symptom \
+	uy is all other factors that could possibly affect Y when X is held constant \
+think of this whereby nature examines the values of x and u, and accordingly assigns Y a value using the above equation\
+however, this does not properly express the causal relationship implied by this assignment, because you can rearrange it to say that the symptom influences the disease  \
+so draw a diagram that draws arrows from (perceived) causes to (perceived) effects \
+will need to read the paper to understand the exact diagram implementations\
+pretty important since it talks about and explains d-separation\
+d-separation constitutes the main opening through which the assumptions embodied in structural equation models can confront the scrutiny of non experimental data\
+or in other words, almost all statistical tests capable of invalidating the model are entailed by those implications (of d-separation?)\
+\
+
+\i from linear to nonparametric models and graphs\
+
+\i0 define \'91effect\'92 as a general capacity to transmit changes among variables\
+this is based on simulating hypothetical interventions in the model and has led to new ways of defined and estimating casual effects in nonlinear and non-parametric models\
+that is, models in which the functional form of the equations in unknown\
+the central idea is to exploit the invariant characteristics of structural equations without committing to a specific functional form\
+see paper again for notation and diagrams page 107\
+\
+
+\i representing interventions\
+
+\i0 this feature of invariance lets us use structural equations as a basis for modelling cause effects and counterfactuals\
+this is done using a math operator called do(x) which \
+	simulates physical interventions by deleting certain functions from the model, \
+	replacing them by a constant X = x\
+	while keeping the rest of the model unchanged\
+again see diagrams \
+you hold X at some value x0, indicating some kind of intervention, and get a new model\
+the joint distribution associated with this new model describes the post-intervention distribution of variables Y and Z (also called controlled or experimental distribution) \
+this is distinguished from the pre-intervention distribution which is the model before we held X at x0\
+central question is\'85can the post-intervention distribution be estimated from data governed by the pre-intervention distribution?\
+this is the problem of identification, see definition 2\
+\
+
+\i estimating the effect of interventions\
+
+\i0 need to understand how hypothetical quantities such as P(y | do(x) ) or E(P(y | do(x) ))
+\i  
+\i0 can be estimated from actual data \
+
+\i \
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+
+\i0 \
+\
+\
+ \
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+
+\b \
+}
