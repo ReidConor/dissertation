@@ -118,10 +118,15 @@ spx.mscore.flattened.calc["FiveVarEq"] <- -6.065 + 0.823*(spx.mscore.flattened.c
 spx.mscore.flattened.calc["EightVarEq"] <- -4.84 + 0.920*(spx.mscore.flattened.calc$DSRI) + 0.528*(spx.mscore.flattened.calc$GMI) + 0.404*(spx.mscore.flattened.calc$AQI) + 0.892*(spx.mscore.flattened.calc$SGI) + 0.115*(spx.mscore.flattened.calc$DEPI) - 0.172*(spx.mscore.flattened.calc$SGAI) + 4.679*(spx.mscore.flattened.calc$TATA) - 0.327*(spx.mscore.flattened.calc$LVGI)
 spx.mscore.flattened.calc$Ticker <- as.character(spx.mscore.flattened.calc$Ticker)
 spx.mscore.flattened.calc$Ticker <- gsub(" ", "", spx.mscore.flattened.calc$Ticker, fixed = TRUE)
-View(spx.mscore.flattened.calc)
+
+spx <-  dbReadTable(conn=mydb,name='spx')
+spx$Ticker <- as.character(spx$Ticker)
+spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
+spx.mscore <- merge (x=spx, y=spx.mscore.flattened.calc, by.x='Ticker', by.y='Ticker', all.x = TRUE)
+
 dbWriteTable(
   mydb.processed, 
-  value = spx.mscore.flattened.calc, 
+  value = spx.mscore, 
   name = "spx_mscore", 
   overwrite = TRUE,
   row.names=FALSE
