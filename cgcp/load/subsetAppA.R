@@ -36,9 +36,9 @@ appendixA <- c(
   "AZS",
   "AZS.class"
 )
-spx.reduced <- spx[ , !(names(spx) %in% drops)]
-sxxp.reduced <- sxxp[ , !(names(sxxp) %in% drops)]
-eebp.reduced <- eebp[ , !(names(eebp) %in% drops)]
+spx.reduced <- spx[ , (names(spx) %in% appendixA)]
+sxxp.reduced <- sxxp[ , (names(sxxp) %in% appendixA)]
+eebp.reduced <- eebp[ , (names(eebp) %in% appendixA)]
 
 dbWriteTable(mydb, value = spx.reduced, name = "spx_sub_app_a", overwrite = TRUE, row.names=FALSE)
 dbWriteTable(mydb, value = sxxp.reduced, name = "sxxp_sub_app_a", overwrite = TRUE, row.names=FALSE)
