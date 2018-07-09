@@ -111,6 +111,9 @@ spx.build <- function(){
   spx.fboard <- dbReadTable(conn=mydb.causal,name='spx_fboard')
 
 }
+spx.indepdirfincl <- dbReadTable(conn=mydb.causal,name='spx_indepdirfincl')
+summary(spx.indepdirfincl)
+
 spx.build.indepdirfincl <- function(){
   spx.indepdirfincl <- dbReadTable(conn=mydb.causal,name='spx_indepdirfincl')
   summary(spx.indepdirfincl)  
@@ -128,6 +131,9 @@ spx.build.indepdirfincl <- function(){
   summary(spx.indepdirfincl.results$opTree)
   
 }
+spx.build.indepdirfincl()
+
+
 
 #*********
 # SXXP
@@ -160,4 +166,4 @@ eebp.build.indepChFmlCEO <- function(){
   summary(eebp.indepChFmlCEO.results$opTree)
   
 }
-
+eebp.build.indepChFmlCEO()
