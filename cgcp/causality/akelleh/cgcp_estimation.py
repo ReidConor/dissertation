@@ -10,15 +10,38 @@ import datetime
 
 now = str(datetime.datetime.now())
 
-def stageDbLayer():
+def createLatestResultsTable():
     conn = MySQLdb.connect(host="localhost",
                          user="root",
                          passwd="",
                          db="causal_results")
 
     cur = conn.cursor()
-    drop_table = "drop table if exists `akelleh_results`;"
-    create_table = "create table akelleh_results (datestamp timestamp, dataset varchar(10), treatment varchar(100), target varchar(100), results varchar(100), mm varchar(1000))"
+    drop_table = "drop table if exists `akelleh_results_latest`;"
+    create_table = "create table akelleh_results_latest as \
+    select \
+      a.dataset, \
+      a.treatment, \
+      a.target, \
+      a.results, \
+      a.mm \
+    from akelleh_results a \
+    inner join ( \
+      select \
+        dataset, \
+        treatment, \
+        target, \
+        max(datestamp) as max_datestamp \
+      from akelleh_results \
+      group by \
+        dataset, \
+        treatment, \
+        target \
+    ) b \
+      on a.dataset = b.dataset \
+      and a.treatment = b.treatment \
+      and a.target = b.target \
+      and a.datestamp = b.max_datestamp;"
     cur.execute(drop_table)
     cur.execute(create_table)
     conn.close()
@@ -327,8 +350,8 @@ def eebp_indepChaFCEO_azs():
 if __name__ == "__main__":
     os.system('clear')
 
-    #stageDbLayer()
-    spx_wmOnBoard_tobin()
+    createLatestResultsTable()
+    #spx_wmOnBoard_tobin()
     #spx_indepDirFinlL_azs()
     #spx_fceo_tobin()
     #sxxp_indepDirFormerCEOBoard_tobin()
