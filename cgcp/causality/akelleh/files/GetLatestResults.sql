@@ -22,4 +22,4 @@ inner join (
   on a.dataset = b.dataset
   and a.treatment = b.treatment
   and a.target = b.target
-  and a.datestamp = b.max_datestamp
+  and a.datestamp = b.max_datestamp;
