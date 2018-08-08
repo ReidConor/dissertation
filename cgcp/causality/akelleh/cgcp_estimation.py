@@ -46,66 +46,160 @@ def createLatestResultsTable():
     cur.execute(create_table)
     conn.close()
 
-#read in data from mysql
-def getData(table, database):
+def getData(data_table, imp_vars_table):
     conn = MySQLdb.connect(host="localhost",
                          user="root",
                          passwd="",
-                         db=database)
-                         #db="corp_gov_imputed")
+                         db="corp_gov_causal")
 
-    data = pd.read_sql("SELECT * FROM " + table, conn)
-    data_types = pd.read_sql("describe " + table, conn)
+    data = pd.read_sql("SELECT * FROM " + data_table, conn)
+    data_types = pd.read_sql("describe " + data_table, conn)
     conn.close()
-    return (data, data_types)
 
-def stageAlgo(types):
-    desiredDataTypes = ['double']
-    exclude = ['AZS','Tobins.Q','Tobins.Q.class','AZS.class','Feml.CEO.or.Equiv']
+    conn = MySQLdb.connect(host="localhost",
+                     user="root",
+                     passwd="",
+                     db="mm_results")
+    imp_vars = pd.read_sql("SELECT Var, Imp FROM " + imp_vars_table, conn)
+    conn.close()
 
+    return (data, data_types, imp_vars)
+
+def stageVarTypes(imp_vars_table, imp_limit):
     variable_types = {}
-    for index, row in types.iterrows():
-        if b_any(row["Type"] in x for x in desiredDataTypes):
-            if row["Field"] not in exclude:
-                variable_types[row["Field"]]="c"
+    imp_vars_table = imp_vars_table.sort_values(by='Imp', ascending=False)
+    for index, row in imp_vars_table.iterrows():
+        variable_types[row["Var"]]="c"
+        if index == (imp_limit-1):
+            break
 
     return (variable_types)
 
-#
-#   S&P - America
-#
-def spx_wmOnBoard_tobin():
+
+#####
+def ageRange(dataset, target, data_table, imp_vars_table, imp_limit=10):
+    '''
+    Test the effect of age range in board on tobins
+    M&M:
+        we found that a smaller age range for the board members is positively related with the companies’ performance
+    '''
+    data, types, imp_vars = getData(data_table,imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
+    treatment = 'BOD.Age.Rng'
+    #target = target
+
+    matcher = PropensityScoreMatching()
+
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+    print(ATE_results)
+
+    matcher.check_support(data, treatment, controlFor)
+
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, treatment, controlForPS))
+    print ("")
+
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+    print ("")
+
+    #now write results to mysql
+    conn = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="",
+                         db="causal_results")
+    cur = conn.cursor()
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"we found that a smaller age range for the board members is positively related with the companies performance")
+    cur.execute(query)
+    conn.commit()
+    conn.close()
+    print("Done")
+
+def indepChaFCEO(dataset,target, data_table, imp_vars_table, imp_limit=10):
+        '''
+        Test the effect indep chair or female ceo
+        M&M:
+            ...to be on the “safe” zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.
+        '''
+        data, types, imp_vars = getData(data_table,imp_vars_table)
+        controlFor = stageVarTypes(imp_vars, imp_limit)
+        treatment = 'Indep.Chrprsn.Feml.CEO.or.Equiv'
+        #target = 'AZS.class.Binary'
+
+        matcher = PropensityScoreMatching()
+        ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+
+        matcher.check_support(data, treatment, controlFor)
+
+        controlForPS = controlFor.copy()
+        controlForPS['propensity score'] = 'c'
+
+        print(controlFor)
+        print("")
+        print("Balance before matching")
+        print(matcher.assess_balance(data, treatment, controlForPS))
+        print ("")
+
+        data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+        treated, control = matcher.match(data, assignment=treatment)
+        print("")
+        print("Balance after matching")
+        print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+        print ("")
+
+
+        #now write results to mysql
+        conn = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="",
+                             db="causal_results")
+        cur = conn.cursor()
+        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...to be on the safe zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.")
+        cur.execute(query)
+        conn.commit()
+        conn.close()
+        print("Done")
+
+def wmOnBoard(dataset, target, data_table, imp_vars_table, imp_limit=10):
     '''
     Test the effect of having women on the board of directors on the tobins Q score
     M&M:
         For the American companies inside the S&P 500 index,
         we found a positive correlation between the percentage higher
         than 20 % of women in the board and the Tobin’s Q ratio
-    Latest Results:
-        (-0.094388682158789469, -0.04962212239013655, -0.0068850052276448973)
-    Comments:
-        So no real causal influence here, wrong sign
     '''
-    data, types = getData("spx_fboard","corp_gov_causal")
-    controlFor = stageAlgo(types)
+    data, types, imp_vars = getData(data_table,imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
     treatment = 'X..Women.on.Bd'
-    target = 'Tobins.Q'
+    #target = 'Tobins.Q.class'
 
     matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
 
-    matcher.check_support(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
+    matcher.check_support(data, treatment, controlFor)
 
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
     print("")
     print("Balance before matching")
-    print(matcher.assess_balance(data, 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print(matcher.assess_balance(data, treatment, controlForPS))
     print ("")
 
-    data = matcher.score(data, assignment='X..Women.on.Bd', confounder_types={'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c'})
-    treated, control = matcher.match(data, assignment='X..Women.on.Bd')
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
     print("")
     print("Balance after matching")
-    print(matcher.assess_balance(treated.append(control), 'X..Women.on.Bd', {'P.EBITDA': 'c', 'P.B': 'c','Asset':'c', 'Tax':'c', 'P.E':'c', 'propensity score': 'c'}))
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
     print ("")
 
     #now write results to mysql
@@ -114,248 +208,341 @@ def spx_wmOnBoard_tobin():
                          passwd="",
                          db="causal_results")
     cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"For the American companies inside the S and P 500 index, we found a positive correlation between the percentage higher than 20pct of women in the board and the Tobins Q ratio")
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"For the American companies inside the S and P 500 index, we found a positive correlation between the percentage higher than 20pct of women in the board and the Tobins Q ratio")
     cur.execute(query)
     conn.commit()
     conn.close()
     print("Done")
 
-def spx_indepDirFinlL_azs():
+def fceo(dataset, target, data_table, imp_vars_table, imp_limit=10):
+    '''
+    Test the effect of having a female ceo on tobins
+    M&M:
+        This is my own
+    '''
+    data, types, imp_vars = getData(data_table, imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
+    treatment = 'Feml.CEO.or.Equiv'
+    #target = 'Tobins.Q.class'
+
+    matcher = PropensityScoreMatching()
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+
+    #now write results to mysql
+    #conn = MySQLdb.connect(host="localhost",
+    #                     user="root",
+    #                     passwd="",
+    #                     db="causal_results")
+    #cur = conn.cursor()
+    #query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"This is my own")
+    #cur.execute(query)
+    #conn.commit()
+    #conn.close()
+    print("Done")
+
+def indepDirFinlL(dataset, target, data_table, imp_vars_table, imp_limit=10):
     '''
     Test the effect of having a lead indep director and fincl leverage > 2.5
     M&M:
         ...but also the presence of an independent lead director in the company
         along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.
-    Latest Results:
-        (-0.47855609106276292, -0.4343301267327499, -0.3864914259963988)
-    Comments:
-        So this 'treatment' causes quite a dip in AZS, which is what MM are saying
     '''
-    data, types = getData("spx_indepdirfincl","corp_gov_causal")
-    controlFor = stageAlgo(types)
+    data, types, imp_vars = getData(data_table, imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
     treatment = 'Indep.Lead.Dir.Fincl..l'
-    target = 'AZS'
+    #target = 'AZS.class.Binary'
+    #target = 'AZS'
 
     matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+    print(ATE_results)
+
+    matcher.check_support(data, treatment, controlFor)
+
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, treatment, controlForPS))
+    print ("")
+
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+    print ("")
+
+
+
 
     #now write results to mysql
-    conn = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="",
-                         db="causal_results")
-    cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
-    cur.execute(query)
-    conn.commit()
-    conn.close()
+    #conn = MySQLdb.connect(host="localhost",
+    #                     user="root",
+    #                     passwd="",
+    #                     db="causal_results")
+    #cur = conn.cursor()
+    #query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
+    #cur.execute(query)
+    #conn.commit()
+    #conn.close()
     print("Done")
 
-def spx_fceo_tobin():
-    '''
-    Test the effect of having a female ceo on tobins
-    M&M:
-        This is my own
-    Latest Results:
-        (-0.48556936715099608, -0.3878325746547393, -0.29127847792553346)
-    Comments:
-        Non-zero influence?
-    '''
-    data, types = getData("spx_fceo","corp_gov_causal")
-    controlFor = stageAlgo(types)
-    treatment = 'Feml.CEO.or.Equiv'
-    target = 'Tobins.Q'
-
-    matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.EBITDA': 'c', 'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
-
-    #now write results to mysql
-    conn = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="",
-                         db="causal_results")
-    cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"spx",treatment,target,str(ATE_results),"This is my own")
-    cur.execute(query)
-    conn.commit()
-    conn.close()
-    print("Done")
-
-
-#
-#   SXXP - Western Europe
-#
-def sxxp_indepDirFormerCEOBoard_tobin():
-    '''
-    Test the effect of having a lead indep director or former ceo on board on tobins Q
-    M&M:
-        the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobin’s Q
-    Latest Results:
-        (0.012699075182737657, 0.05961530907139483, 0.099317124249211436)
-    Comments:
-        Nothing much, but is positive contrary to what MM say
-
-    '''
-    data, types = getData("sxxp_indepdirfceo","corp_gov_causal")
-    controlFor = stageAlgo(types)
-    treatment = 'Indep.Lead.Dir.Feml.CEO.or.Equiv'
-    target = 'Tobins.Q'
-
-    matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
-
-    #now write results to mysql
-    conn = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="",
-                         db="causal_results")
-    cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"sxxp",treatment,target,str(ATE_results),"the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobins Q")
-    cur.execute(query)
-    conn.commit()
-    conn.close()
-    print("Done")
-
-def sxxp_womenBoard_tobin():
-    '''
-    Test the effect of having a large % of women on the board on tobins
-    M&M:
-        A large percentage of women in the board could also affect negatively the performance.
-    '''
-    data, types = getData("sxxp_fboard","corp_gov_causal")
-    controlFor = stageAlgo(types)
-    treatment = 'X..Women.on.Bd'
-    target = 'Tobins.Q'
-
-    matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
-
-    #now write results to mysql
-    conn = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="",
-                         db="causal_results")
-    cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"sxxp",treatment,target,str(ATE_results),"A large percentage of women in the board could also affect negatively the performance.")
-    cur.execute(query)
-    conn.commit()
-    conn.close()
-    print("Done")
-
-
-#
-#   EEBP - Eastern Europe
-#
-def eebp_ageRange_tobins():
-    '''
-    Test the effect of age range in board on tobins
-    M&M:
-        we found that a smaller age range for the board members is positively related with the companies’ performance
-    '''
-    data, types = getData("eebp_agerange","corp_gov_causal")
-    controlFor = stageAlgo(types)
-    treatment = 'BOD.Age.Rng'
-    target = 'Tobins.Q'
-
-    matcher = PropensityScoreMatching()
-    ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
-
-    #now write results to mysql
-    conn = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="",
-                         db="causal_results")
-    cur = conn.cursor()
-    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"we found that a smaller age range for the board members is positively related with the companies performance")
-    cur.execute(query)
-    conn.commit()
-    conn.close()
-    print("Done")
-
-def eebp_finlL_tobins():
+def finlL(dataset, target, data_table, imp_vars_table, imp_limit=10):
         '''
         Test the effect of financial leverage on tobins
         M&M:
             ...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobin’s Q ratio
-
         '''
-        data, types = getData("eebp_fl","corp_gov_causal")
-        controlFor = stageAlgo(types)
-        treatment = 'Fincl.l.treatment'
-        target = 'Tobins.Q'
-
-        matcher = PropensityScoreMatching()
-        ATE_results = matcher.estimate_ATE(data, treatment, target, {'P.B': 'c', 'Asset':'c', 'Tax':'c', 'P.E':'c'}, bootstrap=True)
-
-        #now write results to mysql
-        conn = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="",
-                             db="causal_results")
-        cur = conn.cursor()
-        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
-        cur.execute(query)
-        conn.commit()
-        conn.close()
-        print("Done")
-
-def eebp_indepChaFCEO_azs():
-        '''
-        Test the effect of financial leverage on tobins
-        M&M:
-            ...to be on the “safe” zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.
-        '''
-        data, types = getData("eebp_indepChFmlCEO","corp_gov_causal")
+        #data, types = getData("eebp_fl","corp_gov_causal")
         #controlFor = stageAlgo(types)
-        controlFor = {
-            'P.B': 'c',
-            'Fincl..l':'c',
-            'Asset':'c',
-            'Tax':'c',
-            'P.E':'c',
-            'OPM.T12M':'c',
-            'P.EBITDA':'c',
-            'EV.EBITDA.T12M':'c',
-            'ROC':'c',
-            'ROE':'c',
-            'BOD.Age.Rng':'c',
-            'Norm.NI.to.NI.for.Cmn..':'c',
-            'Cash.Gen.Cash.Reqd':'c',
-            'Bd.Avg.Age':'c',
-            'X5Yr.Avg.Adj.ROE':'c',
-            #'Dvd.Yld':'c',
-            'EBITDA.Sh':'c',
-            'Net.Debt.to.EBITDA':'c'
-        }
-        treatment = 'Indep.Chrprsn.Feml.CEO.or.Equiv'
-        target = 'AZS.class.Binary'
+        data, types, imp_vars = getData(data_table, imp_vars_table)
+        controlFor = stageVarTypes(imp_vars, imp_limit)
+        treatment = 'Fincl.l.treatment'
+        #target = 'Tobins.Q.class'
 
         matcher = PropensityScoreMatching()
         ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+        print(ATE_results)
+
+        matcher.check_support(data, treatment, controlFor)
+
+        controlForPS = controlFor.copy()
+        controlForPS['propensity score'] = 'c'
+
+        print(controlFor)
+        print("")
+        print("Balance before matching")
+        print(matcher.assess_balance(data, treatment, controlForPS))
+        print ("")
+
+        data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+        treated, control = matcher.match(data, assignment=treatment)
+        print("")
+        print("Balance after matching")
+        print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+        print ("")
 
         #now write results to mysql
-        conn = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="",
-                             db="causal_results")
-        cur = conn.cursor()
-        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,"eebp",treatment,target,str(ATE_results),"...to be on the safe zone of the Altman Z-score it is important to have an independent chairperson or even a woman as CEO.")
-        cur.execute(query)
-        conn.commit()
-        conn.close()
+        #conn = MySQLdb.connect(host="localhost",
+        #                     user="root",
+        #                     passwd="",
+        #                     db="causal_results")
+        #cur = conn.cursor()
+        #query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
+        #cur.execute(query)
+        #conn.commit()
+        #conn.close()
         print("Done")
 
+def indepDirFormerCEOBoard(dataset, target, data_table, imp_vars_table, imp_limit=10):
+    '''
+    Test the effect of having a lead indep director or former ceo on board on tobins Q
+    M&M:
+        the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobin’s Q
+    '''
+    data, types, imp_vars = getData(data_table, imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
+    treatment = 'Indep.Lead.Dir.Former.CEO.on.Board'
+
+    matcher = PropensityScoreMatching()
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+
+    matcher.check_support(data, treatment, controlFor)
+
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, treatment, controlForPS))
+    print ("")
+
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+    print ("")
+
+    #now write results to mysql
+    conn = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="",
+                         db="causal_results")
+    cur = conn.cursor()
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"the presence of an independent lead director or a former CEO in the board could be a sign of weaker performances, being negatively correlated with Tobins Q")
+    cur.execute(query)
+    conn.commit()
+    conn.close()
+    print("Done")
+
+def ceoPay (dataset, target, data_table, imp_vars_table, imp_limit=10):
+    '''
+    Test the effect of above average ceo pay
+    M&M:
+        NA
+    '''
+    data, types, imp_vars = getData(data_table, imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
+    treatment = 'CEOPayOverMedian'
+    matcher = PropensityScoreMatching()
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+
+    matcher.check_support(data, treatment, controlFor)
+
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, treatment, controlForPS))
+    print ("")
+
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+    print ("")
+
+    #now write results to mysql
+    conn = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="",
+                         db="causal_results")
+    cur = conn.cursor()
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"my own")
+    cur.execute(query)
+    conn.commit()
+    conn.close()
+    print("Done")
+
+def esg (dataset, target, treatment, data_table, imp_vars_table, imp_limit=10):
+    '''
+    Test the effect of esg disclosure
+    M&M:
+        NA
+    '''
+    data, types, imp_vars = getData(data_table, imp_vars_table)
+    controlFor = stageVarTypes(imp_vars, imp_limit)
+
+    matcher = PropensityScoreMatching()
+    ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
+    print(ATE_results)
+
+    matcher.check_support(data, treatment, controlFor)
+
+    controlForPS = controlFor.copy()
+    controlForPS['propensity score'] = 'c'
+
+    print(controlFor)
+    print("")
+    print("Balance before matching")
+    print(matcher.assess_balance(data, treatment, controlForPS))
+    print ("")
+
+    data = matcher.score(data, assignment=treatment, confounder_types=controlFor)
+    treated, control = matcher.match(data, assignment=treatment)
+    print("")
+    print("Balance after matching")
+    print(matcher.assess_balance(treated.append(control), treatment, controlForPS))
+    print ("")
+    conn = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="",
+                         db="causal_results")
+    cur = conn.cursor()
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"my own")
+    cur.execute(query)
+    conn.commit()
+    conn.close()
+    print("Done")
+
+
+################################################################
 
 
 if __name__ == "__main__":
     os.system('clear')
 
+
+    #matching in general is good here
+    #ageRange("eebp", "Tobins.Q.class", "eebp_agerange", "eebp_tobin_q_imp_vars")
+    #ageRange("eebp", "AZS.class.Binary", "eebp_agerange", "eebp_altman_imp_vars")
+    #ageRange("spx", "Tobins.Q.class", "spx_agerange", "spx_tobin_q_imp_vars", imp_limit=8)
+    #ageRange("spx", "AZS.class.Binary", "spx_agerange", "spx_altman_imp_vars", imp_limit=8)
+    #ageRange("sxxp", "Tobins.Q.class", "sxxp_agerange", "sxxp_tobin_q_imp_vars")
+    #ageRange("sxxp", "AZS.class.Binary", "sxxp_agerange", "sxxp_altman_imp_vars")
+
+    #matching not great for first 2/3, good after that
+    #indepChaFCEO("eebp","Tobins.Q.class", "eebp_indepChFmlCEO", "eebp_tobin_q_imp_vars", imp_limit=6)
+    #indepChaFCEO("eebp","AZS.class.Binary", "eebp_indepChFmlCEO", "eebp_altman_imp_vars")
+    #indepChaFCEO("spx", "Tobins.Q.class", "spx_indepChFmlCEO", "spx_tobin_q_imp_vars")
+    #indepChaFCEO("spx", "AZS.class.Binary", "spx_indepChFmlCEO", "spx_altman_imp_vars")
+    #indepChaFCEO("sxxp", "Tobins.Q.class", "sxxp_indepChFmlCEO", "sxxp_tobin_q_imp_vars", imp_limit=9)
+    #indepChaFCEO("sxxp", "AZS.class.Binary", "sxxp_indepChFmlCEO", "sxxp_altman_imp_vars", imp_limit=9)
+
+    #matching not great for first 2/3, good after that
+    #wmOnBoard("eebp","Tobins.Q.class","eebp_fboard","eebp_tobin_q_imp_vars", imp_limit=7)
+    #wmOnBoard("eebp","AZS.class.Binary","eebp_fboard","eebp_altman_imp_vars", imp_limit=7)
+    #wmOnBoard("spx","Tobins.Q.class", "spx_fboard","spx_tobin_q_imp_vars", imp_limit=9)
+    #wmOnBoard("spx","AZS.class.Binary", "spx_fboard","spx_altman_imp_vars")
+    #wmOnBoard("sxxp","Tobins.Q.class", "sxxp_fboard","sxxp_tobin_q_imp_vars", imp_limit=8)
+    #wmOnBoard("sxxp","AZS.class.Binary", "sxxp_fboard","sxxp_altman_imp_vars", imp_limit=7)
+
+    #come back to
+    ##fceo("eebp", "eebp_fceo", "eebp_tobin_q_imp_vars") #there are only 4 feml CEO's in the org dataset. leave off
+    #fceo("spx","Tobins.Q.class" ,"spx_fceo", "spx_tobin_q_imp_vars", imp_limit=8)
+    #fceo("spx","AZS.class.Binary" ,"spx_fceo", "spx_altman_imp_vars", imp_limit=7)
+    #fceo("sxxp", "Tobins.Q.class", "sxxp_fceo", "sxxp_tobin_q_imp_vars", imp_limit=9)
+    #fceo("sxxp", "AZS.class.Binary", "sxxp_fceo", "sxxp_altman_imp_vars", imp_limit=9)
+
+    #matching not great for first 2/3, good after that
+    ##indepDirFinlL("eebp", "eebp_indepdirfincl", "eebp_altman_imp_vars") #not enough samples are treated
+    #indepDirFinlL("spx","AZS.class.Binary", "spx_indepdirfincl", "spx_altman_imp_vars")
+    #indepDirFinlL("spx","Tobins.Q.class", "spx_indepdirfincl", "spx_tobin_q_imp_vars",imp_limit=8)
+    #indepDirFinlL("sxxp", "Tobins.Q.class", "sxxp_indepdirfincl", "sxxp_tobin_q_imp_vars")
+    #indepDirFinlL("sxxp", "AZS.class.Binary", "sxxp_indepdirfincl", "sxxp_altman_imp_vars",imp_limit=8)
+    #indepDirFinlL("spx_mscore","MScore", "spx_mscore_indepdirfincl", "spx_tobin_q_imp_vars", imp_limit=3)
+
+    #very few variables actually being used here, overall not great but might be usable
+    #finlL("eebp", "Tobins.Q.class" , "eebp_fl", "eebp_tobin_q_imp_vars")
+    #finlL("eebp", "AZS.class.Binary" , "eebp_fl", "eebp_altman_imp_vars", imp_limit=4)
+    #finlL("spx", "Tobins.Q.class", "spx_fl", "spx_tobin_q_imp_vars", imp_limit=4)
+    #finlL("spx", "AZS.class.Binary", "spx_fl", "spx_altman_imp_vars", imp_limit=2)
+    #finlL("sxxp", "Tobins.Q.class", "sxxp_fl", "sxxp_tobin_q_imp_vars", imp_limit=1)
+    #finlL("sxxp", "AZS.class.Binary", "sxxp_fl", "sxxp_altman_imp_vars", imp_limit=5) #this is decent
+    #finlL("spx_mscore", "MScore", "spx_mscore_fl", "spx_tobin_q_imp_vars", imp_limit=1)
+
+    #not very good
+    ##indepDirFormerCEOBoard("eebp", "Tobins.Q.class" , "eebp_indepdirformerceo", "eebp_tobin_q_imp_vars", imp_limit=1 )
+    ##indepDirFormerCEOBoard("eebp", "AZS.class.Binary" , "eebp_indepdirformerceo", "eebp_altman_imp_vars")
+    #indepDirFormerCEOBoard("spx", "Tobins.Q.class" , "spx_indepdirformerceo", "spx_tobin_q_imp_vars")
+    #indepDirFormerCEOBoard("spx", "AZS.class.Binary" , "spx_indepdirformerceo", "spx_altman_imp_vars")
+    #indepDirFormerCEOBoard("sxxp", "Tobins.Q.class" , "sxxp_indepdirformerceo", "sxxp_tobin_q_imp_vars")
+    #indepDirFormerCEOBoard("sxxp", "AZS.class.Binary" , "sxxp_indepdirformerceo", "sxxp_altman_imp_vars")
+
+    #good
+    #ceoPay("spx", "Tobins.Q.class" , "spx_ceopay", "spx_tobin_q_imp_vars")
+    #ceoPay("spx", "AZS.class.Binary" , "spx_ceopay", "spx_altman_imp_vars")
+
+    #some good, some not so good
+    #esg("spx", "Tobins.Q.class" , "esg_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars",imp_limit=9 )
+    #esg("spx", "AZS.class.Binary" , "esg_disc_over_avg", "spx_csr", "spx_altman_imp_vars")
+    #esg("spx", "Tobins.Q.class" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_tobin_q_imp_vars",imp_limit=6)
+    #esg("spx", "AZS.class.Binary" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_altman_imp_vars",imp_limit=5)
+    esg("spx", "Tobins.Q.class" , "social_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars") #pretty good matching
+    esg("spx", "AZS.class.Binary" , "social_disc_over_avg", "spx_csr", "spx_altman_imp_vars",imp_limit=8) #pretty good matching
+    #esg("spx", "Tobins.Q.class" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_tobin_q_imp_vars")
+    #esg("spx", "AZS.class.Binary" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_altman_imp_vars")
+    #esg("spx", "Tobins.Q.class" , "ANTI.BRIBERY_ETHICS_POLICY", "spx_csr", "spx_tobin_q_imp_vars")
+    #esg("spx", "AZS.class.Binary" , "ANTI.BRIBERY_ETHICS_POLICY", "spx_csr", "spx_altman_imp_vars")
+
+
+
     createLatestResultsTable()
-    #spx_wmOnBoard_tobin()
-    #spx_indepDirFinlL_azs()
-    #spx_fceo_tobin()
-    #sxxp_indepDirFormerCEOBoard_tobin()
-    #sxxp_womenBoard_tobin()
-    #eebp_ageRange_tobins()
-    #eebp_finlL_tobins()
-    #eebp_indepChaFCEO_azs()

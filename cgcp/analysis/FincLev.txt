@@ -1,0 +1,12 @@
+Findings
+----
+
+Fincl..l mean is higher in eep
+medians and quartiles are similar
+thus more extreme values in eep
+
+
+
+Sust.Gr.Rt median in spx way higher (~ 10 vs 5.5)
+its the maximum rate of growth that a firm can sustain without having to expand financial leverage  
+so eebp has to take on leverage to achieve the same growth

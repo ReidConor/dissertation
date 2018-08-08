@@ -5,7 +5,6 @@ library(reshape)
 mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov')
 mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 
-
 # Beneish M-Score
 #
 #
@@ -131,86 +130,83 @@ dbWriteTable(
   overwrite = TRUE,
   row.names=FALSE
 ) 
-
-
+remove(list = ls()[!(grepl("mydb", ls()))])
 
 
 
 # CSR
 #
-#
-#
-#
-#
-#
+spx <- dbReadTable(conn=mydb.processed,name='spx')
 spx.csr <- dbReadTable(conn=mydb,name='spx_csr')
 spx.csr.reduced <- spx.csr[c("Ticker","Variable", "X2014")]
-spx.csr.reduced <- spx.csr.reduced[spx.csr.reduced$Variable == "ESG_DISCLOSURE_SCORE",]
-for(i in 1:ncol(spx.csr.reduced)){
-  spx.csr.reduced[is.na(spx.csr.reduced[,i]), i] <- mean(spx.csr.reduced[,i], na.rm = TRUE)
-}
-spx.csr.reduced <- data.frame(spx.csr.reduced$Ticker, spx.csr.reduced$X2014) 
-colnames(spx.csr.reduced) <- c("Ticker","ESG_DISCLOSURE_SCORE")
-spx.csr.reduced$Ticker <- gsub(" ", "", spx.csr.reduced$Ticker, fixed = TRUE)
-# Merge and write
-#
-#
-#
-#
-#
-#
-spx <- dbReadTable(conn=mydb.processed,name='spx')
+
+#esg disc
+spx.csr.esg.disc <- spx.csr.reduced[spx.csr.reduced$Variable == "ESG_DISCLOSURE_SCORE",]
+spx.csr.esg.disc <- data.frame(spx.csr.esg.disc$Ticker, spx.csr.esg.disc$X2014) 
+colnames(spx.csr.esg.disc) <- c("Ticker","ESG_DISCLOSURE_SCORE")
+
+#fair renum
+spx.csr.fair.renum <- spx.csr.reduced[spx.csr.reduced$Variable == "FAIR_REMUNERATION_POLICY",]
+spx.csr.fair.renum <- data.frame(spx.csr.fair.renum$Ticker, spx.csr.fair.renum$X2014) 
+colnames(spx.csr.fair.renum) <- c("Ticker","FAIR_REMUNERATION_POLICY")
+
+#social disc
+spx.csr.social.disc <- spx.csr.reduced[spx.csr.reduced$Variable == "SOCIAL_DISCLOSURE_SCORE",]
+spx.csr.social.disc <- data.frame(spx.csr.social.disc$Ticker, spx.csr.social.disc$X2014) 
+colnames(spx.csr.social.disc) <- c("Ticker","SOCIAL_DISCLOSURE_SCORE")
+
+#eq oppertunities
+spx.csr.eq.opp <- spx.csr.reduced[spx.csr.reduced$Variable == "EQUAL_OPPORTUNITY_POLICY",]
+spx.csr.eq.opp <- data.frame(spx.csr.eq.opp$Ticker, spx.csr.eq.opp$X2014) 
+colnames(spx.csr.eq.opp) <- c("Ticker","EQUAL_OPPORTUNITY_POLICY")
+
+#anti bribery
+spx.csr.ant.brib <- spx.csr.reduced[spx.csr.reduced$Variable == "ANTI-BRIBERY_ETHICS_POLICY",]
+spx.csr.ant.brib <- data.frame(spx.csr.ant.brib$Ticker, spx.csr.ant.brib$X2014) 
+colnames(spx.csr.ant.brib) <- c("Ticker","ANTI-BRIBERY_ETHICS_POLICY")
+
 spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
+spx.csr.esg.disc$Ticker <- gsub(" ", "", spx.csr.esg.disc$Ticker, fixed = TRUE)
+spx.csr.fair.renum$Ticker <- gsub(" ", "", spx.csr.fair.renum$Ticker, fixed = TRUE)
+spx.csr.social.disc$Ticker <- gsub(" ", "", spx.csr.social.disc$Ticker, fixed = TRUE)
+spx.csr.eq.opp$Ticker <- gsub(" ", "", spx.csr.eq.opp$Ticker, fixed = TRUE)
+spx.csr.ant.brib$Ticker <- gsub(" ", "", spx.csr.ant.brib$Ticker, fixed = TRUE)
 
-to.write <- merge(x=spx, y=spx.mscore.flattened.calc, by.x="Ticker", by.y="Ticker", all.x = TRUE)
-to.write <- merge(x=to.write, y=spx.csr.reduced, by.x="Ticker", by.y="Ticker", all.x = TRUE)
 
-summary(to.write)
+spx.csr.final <- merge(x=spx, y=spx.csr.esg.disc, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.fair.renum, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.social.disc, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.eq.opp, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.ant.brib, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+summary(spx.csr.final)
 
 dbWriteTable(
   mydb.processed, 
-  value = to.write, 
-  name = "spx_cgcp", 
+  value = spx.csr.final, 
+  name = "spx_csr", 
   overwrite = TRUE,
   row.names=FALSE
 ) 
+remove(list = ls()[!(grepl("mydb", ls()))])
 
 
 
 
 
-
-
-
-
-
-
-
-# CEO Comp
-#
-#
-#
-#
-#
-#
-spx.ceo.comp <- dbReadTable(conn=mydb,name='spx_ceo_comp')
-spx.ceo.comp <- spx.ceo.comp[,c("Ticker","X2014")]
-spx.ceo.comp <- spx.ceo.comp[complete.cases(spx.ceo.comp),]
-spx.ceo.comp$Ticker <- gsub(" ", "", spx.ceo.comp$Ticker, fixed = TRUE)
-colnames(spx.ceo.comp) <- c("Ticker","TotalCeoComp")
-
+# CEO COMP
 spx <- dbReadTable(conn=mydb.processed,name='spx')
+spx.ceo.comp <- dbReadTable(conn=mydb,name='spx_ceo_comp')
+
+spx.ceo.comp <- data.frame(spx.ceo.comp$Ticker, spx.ceo.comp$X2014) 
+colnames(spx.ceo.comp) <- c("Ticker","CEOPay")
+spx.ceo.comp$Ticker <- gsub(" ", "", spx.ceo.comp$Ticker, fixed = TRUE)
 spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
-
-to.write <- merge(x=spx, y=spx.ceo.comp, by.x="Ticker", by.y="Ticker", all.x = TRUE)
-summary(to.write)
-
+spx.ceo.comp.final <- merge(x=spx, y=spx.ceo.comp, by.x="Ticker", by.y="Ticker", all.x = TRUE)
 dbWriteTable(
   mydb.processed, 
-  value = to.write, 
+  value = spx.ceo.comp.final, 
   name = "spx_ceo_comp", 
   overwrite = TRUE,
   row.names=FALSE
 ) 
-
-
+remove(list = ls()[!(grepl("mydb", ls()))])

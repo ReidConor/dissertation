@@ -35,6 +35,6 @@ spx.pca <- prcomp(spx.vars,
                  )            
 print(spx.pca)
 plot(spx.pca, type = "l")
-summary(spx.pca)
-spx.pca$x[,1:4] # use the first 4 components for each record
+View(spx.pca$rotation)
+View(spx.pca$x[,1:5]) # use the first 4 components for each record
 

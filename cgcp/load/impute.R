@@ -4,9 +4,11 @@
 library(RMySQL)
 mydb_processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 mydb_imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_imputed')
+
 spx <- dbReadTable(conn=mydb_processed,name='spx')
 spx.cgcp <- dbReadTable(conn=mydb_processed,name='spx_cgcp')
 spx.ceo.comp <- dbReadTable(conn=mydb_processed,name='spx_ceo_comp')
+spx.csr <- dbReadTable(conn=mydb_processed,name='spx_csr')
 spx.mscore <- dbReadTable(conn=mydb_processed,name='spx_mscore')
 sxxp <- dbReadTable(conn=mydb_processed,name='sxxp')
 eebp <- dbReadTable(conn=mydb_processed,name='eebp')
@@ -35,6 +37,7 @@ impute <- function(dataset){
 spx.imputed <- impute(spx)
 spx.cgcp.imputed <- impute(spx.cgcp)
 spx.ceo.comp.imputed <- impute(spx.ceo.comp)
+spx.csr.imputed <- impute(spx.csr)
 spx.mscore.imputed <- impute(spx.mscore)
 sxxp.imputed <- impute(sxxp)
 eebp.imputed <- impute(eebp)
@@ -50,6 +53,7 @@ eebp.imputed$CEO.Duality <- NULL
 spx.imputed.complete=spx.imputed[complete.cases(spx.imputed), ]
 spx.cgcp.imputed.complete=spx.cgcp.imputed[complete.cases(spx.cgcp.imputed), ]
 spx.ceo.comp.imputed.complete=spx.ceo.comp.imputed[complete.cases(spx.ceo.comp.imputed), ]
+spx.csr.imputed.complete=spx.csr.imputed[complete.cases(spx.csr.imputed), ]
 spx.mscore.imputed.complete=spx.mscore.imputed[complete.cases(spx.mscore.imputed), ]
 sxxp.imputed.complete=sxxp.imputed[complete.cases(sxxp.imputed), ]
 eebp.imputed.complete=eebp.imputed[complete.cases(eebp.imputed), ]
@@ -65,6 +69,7 @@ mydb_imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_im
 dbWriteTable(mydb_imputed, value = spx.imputed.complete, name = "spx", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = spx.cgcp.imputed.complete, name = "spx_cgcp", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = spx.ceo.comp.imputed.complete, name = "spx_ceo_comp", overwrite = TRUE )
+dbWriteTable(mydb_imputed, value = spx.csr.imputed.complete, name = "spx_csr", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = spx.mscore.imputed.complete, name = "spx_mscore", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = sxxp.imputed.complete, name = "sxxp", overwrite = TRUE )
 dbWriteTable(mydb_imputed, value = eebp.imputed.complete, name = "eebp", overwrite = TRUE )
