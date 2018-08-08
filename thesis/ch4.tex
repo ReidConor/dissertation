@@ -1,18 +1,414 @@
 %   MSc Business Analytics Dissertation
 %
-%   Title:     Aaa Bbbbbbb Cccccccccc
-%   Author(s): Xxxxxx Xxxxxxxxx and Yyy Yyyyyyyyy
+%   Title:     The Relationship Between Corporate Governance and Company Performance
+%   Author: Conor Reid 
 %
-%   Chapter 5: Results
-%
-%   Change Control:
-%   When     Who   Ver  What
-%   -------  ----  ---  --------------------------------------------------------------
-%   11Feb11  AB    0.1  Begun 
+%   Chapter 4: Results
 %
 
 \chapter{Results}\label{C.Results}
 
-\section{Introduction}\label{S.intro5}
+\section{Introduction}\label{S.intro4}
+{As mentioned in previous chapters, there are three stages of analysis carried out as part of this study. The first revolves around replicating the work of \cite{moldovan2015learning}, who modelled the research question as a classification problem by thresholding on the continuous dependant variables measuring corporate success. The second stage neglects this thresholding leading to a regression analysis. The third takes the results of the first two and implements propensity score matching in an effort to infer causal influences to strengthen statements previous made based on correlations. This chapter outlines the results of each stage in turn.}
+\section{Classification}\label{S.classification4}
+%{\cite{moldovan2015learning}, for each of the three datasets, implemented four separate algorithms and used common performance metrics across all four to enable comparison. The four algorithms were all used for classification, namely Adaboost M1, J48, Simple Log and ADTree. This study takes both Adaboost M1 and an implementation of J48 and aims to replicate these results. We use similar measures of model performance. }
+{As mentioned above, this study aims to replicate the results of the work of \cite{moldovan2015learning} using implementations of two of the classification algorithms used in that study. Similar performance measures are used to enable easier comparison.}
 
-The results \ldots 
+{Below are reproductions of \cite{moldovan2015learning} results.}\\
+
+\subsection*{SPX}
+{M\&M}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  89.7177     & 0.89 &  0.905 & 0.957  \\
+ J48  & 85.2823  & 0.841 &  0.866 & 0.854  \\
+ \hline
+\end{tabular}
+\caption{Classification Results - M\&M, SPX, Tobin's Q}
+\end{table}
+
+
+{Me}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  88.5542     & 0.88 &  0.90 & 0.89  \\
+ J48  & 89.1566  & 0.91 &  0.87 & 0.89  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - Current Study, SPX, Tobin's Q}
+\end{table}
+\clearpage
+
+
+\begin{table}[h]
+%\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  82.9443     & 0.843 &  0.725 & 0.865 & 0.942  \\
+ J48  & 73.6086  & 0.722 &  0.569 & 0.816 & 0.843  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - M\&M, SPX, Altman Z Score}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  82.7338     & 0.7143 &  0.6316 & 0.8888 & 0.8557  \\
+ J48  & 67.6259  & 0.5517 &  0.2609 & 0.8276 & 0.7316  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - Current Study, SPX, Altman Z Score}
+\end{table}
+
+
+\clearpage
+\subsection{SXXP}
+{M\&M}c\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  88.2353     & 0.891 &  0.874 & 0.946  \\
+ J48  & 87.395  & 0.871 &  0.877 & 0.874  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - M\&M, SXXP, Tobin's Q}
+\end{table}
+
+{Me}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  88.4422     & 0.83 &  0.94 & 0.88  \\
+ J48  & 84.9246  & 0.89 &  0.81 & 0.85  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - Current Study, SXXP, Tobin's Q}
+\end{table}
+\clearpage
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  76.2681     & 0.804 &  0.522 & 0.864 & 0.769  \\
+ J48  & 74.2754  & 0.788 &  0.531 & 0.803 & 0.856  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - M\&M, SXXP, Altman Z Score}
+\end{table}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  77.7071     & 0.8667 &  0.6579 & 0.8077 & 0.8187  \\
+ J48  & 72.6115  & 0.5417 &  0.5588 & 0.8283 & 0.8350  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - Current Study, SXXP, Altman Z Score}
+\end{table}
+
+
+\clearpage
+\subsection{EEBP}
+{M\&M}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  81.8182     & 0.823 &  0.813 & 0.889  \\
+ J48  & 77.1044  & 0.783 &  0.76 & 0.836  \\
+ \hline
+ \end{tabular}
+\caption{Classification Results  - M\&M, EEBP, Tobin's Q}
+\end{table}
+
+{Me}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{5}{|c|}{Dependent Variable : Tobin's Q} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & ROC \\
+ \hline
+ Adaboost M1  &  78.7878     & 0.78 &  0.80 & 0.79  \\
+ J48  & 76.7676  & 0.85 &  0.66 & 0.76  \\
+ \hline
+ \end{tabular}
+\caption{Classification Results  - Current Study, EEBP, Tobin's Q}
+\end{table}
+\clearpage
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  63.7602     & 0.746 &  0.496 & 0.675 & 0.771  \\
+ J48  & 65.6676  & 0.79 &  0.615 & 0.598 & 0.8  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - M\&M, EEBP, Altman Z Score}
+\end{table}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{6}{|c|}{Dependent Variable : Altman Z Score} \\
+ \hline
+ Algorithm & Accuracy (\%) & Precision Class 0 & Precision Class 1 & Precision Class 2 & ROC \\
+ \hline
+ Adaboost M1  &  69.2308     & 0.3334 &  0.5152 & 0.8572 & 0.776  \\
+ J48  & 67.9488  & NA &  0.6667 & 0.6818 & 0.6905  \\
+ \hline
+\end{tabular}
+\caption{Classification Results  - Current Study, EEBP, Altman Z Score}
+\end{table}
+
+
+\section{Regression}\label{S.regression4}
+{Unlike in the classification problem above, there are no direct results to compare the regression results to.}
+
+
+\subsection{SPX}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{SPX - Tobins Q} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+ 0 (Ridge) & 0.514504662287613 & 1.54335249821869 \\          
+0.1 & 0.736922216718774 & 0.752106800916883\\
+0.2 & 0.723096373541166 & 0.918016920932065\\
+0.3 & 0.736780891632018 & 0.729876793419644\\
+0.4 & 0.728597775405239 & 0.802518515140072\\
+0.5 & 0.736648154658892 & 0.736084477965634\\
+0.6 & 0.728370638237572 & 0.729268748938413\\
+0.7 & 0.736782224916274 & 0.740975835009645\\
+0.8 & 0.737003712724359 & 0.757117048022052\\
+0.9 & 0.143531162654549 & 1.94074213436316\\
+1.0 (Lasso) & 0.724748692727598 & 0.730134780410399 \\
+ \hline
+\end{tabular}
+\caption{Regression Results  - SPX, Tobin's Q}
+\end{table}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{SPX - Altman Z} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+0 (Ridge) & 0.372331817825629 & 13.7865694258794\\
+0.1 & 0.512946605245459 & 10.1747805657968\\
+0.2 & 0.478411885246279 & 10.4174275138483\\
+\rowcolor{gray} 0.3 & 0.512484854172808 & 10.3869701107608\\
+0.4 & 0.478650059026158 & 9.85821851442949\\
+0.5 & 0.512396355841667 & 9.61495426389283\\
+0.6 & 0.513129590937884 & 10.3182884065172\\
+0.7 & 0.512360136424729 & 10.2731129074996\\
+0.8 & 0.51296402797329 & 10.0251122703722\\
+0.9 & 0.158067206245976 & 16.6297402971145\\
+1 (Lasso) & 0.481696182985345 & 9.7934982676994\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - SPX, Altman Z Score}
+\end{table}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{4}{|c|}{SPX - MScore} \\
+ \hline
+ Version & Alpha & $r^2$ & RMSE \\
+ \hline
+ Eight Var & 0 (Ridge) & 0.161763349346356 & 0.52248427690731\\
+ Eight Var & 0.1 & 0.160686969111962 & 0.52248427690731\\
+ Eight Var & 0.2 & 0.16087107461321 & 0.525399202961835\\
+ Eight Var & 0.3 & 0.162881525570778 & 0.523786379573273\\
+ Eight Var & 0.4 & 0.160958599827099 & 0.524567511121719\\
+ Eight Var & 0.5 & 0.164439785453016 & 0.52248427690731\\
+ Eight Var & 0.6 & 0.161967399023167 & 0.52248427690731\\
+ Eight Var & 0.7 & 0.162080883640325 & 0.524889511314994\\
+ Eight Var & 0.8 & 0.162171017258007 & 0.525861155920625\\
+ Eight Var & 0.9 & 0.161728393839323 & 0.52248427690731\\
+ Eight Var & 1 (Lasso) & 0.162286226096596 & 0.526206255164816\\
+ \hline
+Five Var & 0 (Ridge) & 0.193937170230207 & 0.770170611192408\\
+Five Var & 0.1 & 0.18921047337687 & 0.772779464807637\\
+Five Var & 0.2 & 0.189363957857913 & 0.770170611192408\\
+Five Var & 0.3 & 0.198214760742752 & 0.777828160421032\\
+Five Var & 0.4 & 0.190864120365312 & 0.770170611192408\\
+Five Var & 0.5 & 0.197422334409991 & 0.780371378394571\\
+Five Var & 0.6 & 0.198379975004173 & 0.778495091987483\\
+Five Var & 0.7 & 0.190942969134578 & 0.785662470693709\\
+Five Var & 0.8 & 0.196137323374588 & 0.792097352110208\\
+Five Var & 0.9 & 0.188610424366829 & 0.770170611192408\\
+Five Var & 1 (Lasso) & 0.192532372715372 & 0.777333911726662\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - SPX, MScore}
+\end{table}
+\clearpage
+
+\subsection{SXXP}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{SXXP - Tobins Q} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+0 (Ridge) & 0.924245520228615 & 4.52752573635043\\
+0.1 & 0.936820396581318 & 5.61364933389961\\
+0.2 & 0.936272434248921 & 6.12198520884377\\
+0.3 & 0.936184193929519 & 6.60733408752952\\
+0.4 & 0.936486005016966 & 6.78628962380346\\
+0.5 & 0.937847903413279 & 6.655449299569\\
+0.6 & 0.935338676848096 & 6.88804707065998\\
+0.7 & 0.937887391702568 & 7.08560490201231\\
+0.8 & 0.935720858099178 & 7.04925327857539\\
+0.9 & 0.935982694015804 & 7.14379996319223\\
+1 (Lasso) & 0.935805655675326 & 7.19289948947667\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - SXXP, Tobin's Q}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{SXXP - Altman Z} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+0 (Ridge) & 0.493776589092134 & 12.4040377499728\\
+0.1 & 0.492009638562525 & 13.0187735752629\\
+0.2 & 0.492487747960643 & 12.571232251759\\
+0.3 & 0.493364660095417 & 12.8447464487333\\
+0.4 & 0.495255261342842 & 12.8572572045948\\
+0.5 & 0.443363098262155 & 16.167925121637\\
+0.6 & 0.49250064188208 & 12.408424237533\\
+0.7 & 0.410969802370212 & 14.5362919598181\\
+0.8 & 0.493903828085151 & 12.4931721421183\\
+0.9 & 0.494432810764225 & 12.128503187072\\
+1 (Lasso) & 0.494019676145083 & 12.1087103638653\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - SXXP, Altman Z Score}
+\end{table}
+\clearpage
+
+
+\subsection{EEBP}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{EEBP - Tobins Q} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+0 (Ridge) & 0.704355214812389 & 0.498974752786726\\
+0.1 & 0.694006623409445 & 0.53354739142002\\
+0.2 & 0.727564731166982 & 0.47859949878705\\
+0.3 & 0.69625780677679 & 0.475553525491744\\
+0.4 & 0.707544799542626 & 0.478664221197991\\
+0.5 & 0.656609682843319 & 0.546502619727653\\
+0.6 & 0.68326568451999 & 0.50410936532166\\
+0.7 & 0.667251282563606 & 0.590747734679593\\
+0.8 & 0.668367543398841 & 0.462386508939621\\
+0.9 & 0.699087289610586 & 0.454557500864114\\
+1 (Lasso) & 0.660904967486424 & 0.462774482588657\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - EEBP, Tobin's Q}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{2.5cm}||p{4cm}|p{4cm}| }
+ \hline
+ \multicolumn{3}{|c|}{EEBP - Altman Z} \\
+ \hline
+ Alpha & $r^2$ & RMSE \\
+ \hline
+0 (Ridge) & 0.497359901145225 & 7.4448320397538\\
+0.1 & 0.521420102039222 & 7.63377981958334\\
+0.2 & 0.479465764190985 & 8.27754797472766\\
+0.3 & 0.503750477243543 & 7.70658821833145\\
+0.4 & 0.503990128494823 & 7.86100761373032\\
+0.5 & 0.524032769294246 & 8.25112976717522\\
+0.6 & 0.512202382858808 & 8.15220512063965\\
+0.7 & 0.507649931007144 & 8.02131671759577\\
+0.8 & 0.493904840655251 & 8.1278950336226\\
+0.9 & 0.495564417663372 & 8.2173172609159\\
+1 (Lasso) & 0.480490621105762 & 8.19196705962938\\
+ \hline
+\end{tabular}
+\caption{Regression Results  - EEBP, Altman Z Score}
+\end{table}
+
+\clearpage
+\section{Causal Estimation}\label{S.causal4}
+

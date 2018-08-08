@@ -13,39 +13,60 @@
 
 \chapter{Methodology}\label{C.Methodology}
 \section{Introduction}
-{This chapters outlines the method followed during this analysis, with a view to explaining the detailed steps taken from stage to stage. The KDD process as outlined by \cite{fayyad1996kdd} was followed where possible, as a well established end-to-end framework for deriving knowledge from raw data. To that end, we first discuss data acquisition and the raw data characteristics. This is followed by a discussion of the preprocessing and reduction required to make this data useable. This includes how missing data and outliers are handled. We then outlined the data mining techniques used, including analysis of the advantages and disadvantages of the various statistical methods and associated software packages available. Following this, we outline in detail the steps taken for each element of this study. That is, the replication of and expansion on the work by \cite{moldovan2015learning} and the application of casual research in this domain. We finish by comparing the ways in which results can be interpreted, including what measures of algorithmic success should be used and so on. Overall, this chapter represents the technical aspect of this study and aims to facilitate the replication of this analysis by future researchers. \\\\
+{This chapters outlines the method followed during this analysis, with a view to explaining the detailed steps taken from stage to stage. The Knowledge Discovery in Databases (KDD) process as outlined by \cite{fayyad1996kdd} was followed where possible, as a well established end-to-end framework for deriving knowledge from raw data. To that end, data acquisition and the raw data characteristics are discussed first. This is followed by a discussion of the preprocessing and reduction required to make this data useable, including how missing data and outliers are handled. This is followed by an outline the data mining techniques employed, including analysis of the advantages and disadvantages of the various statistical methods and associated software packages available. Following this, the steps taken for each element of this study are outlined in detail. That is, the replication of and expansion on the work by \cite{moldovan2015learning} and the application of casual research in this domain. We finish by comparing the ways in which results can be interpreted, including what measures of algorithmic success should be used and so on. Overall, this chapter represents the technical aspect of this study and aims to facilitate the replication and expansion of this analysis by future researchers. \\\\
 GitHub is used during this study as a version control and task tracking tool. All code modules written in fulfilment of this study, including all source files of this report, are available at \url {https://github.com/ReidConor/dissertation}. Using source control has various uses, not least acting as a cloud storage mechanism in case of local machine failure. In addition, changes to the project over time can be much more easily managed, including changes to the datasets used. Making this code available on GitHub also facilitates collaboration and the communication of ideas between collaborators.   }
 \section{Data Acquisition}
 \subsection{Core Data}
-{The primary source of data for this study comes from the authors of the paper it extends. Darie Moldovan and Simona Mutu were kind enough to provide us with the data they used in their analysis, sending the complete set and granting permission to use it for out analysis. This has a duel benefit. Firstly, the results from the current analysis can be placed in a much clearer context, since we can directly and numerically identify wether or not the inclusion of auxiliary features or different measures of corporate success pose an advantage. In other words, we do not need to worry about data dependance when comparing the results of this study and the study it seeks to improve on. Secondly, being granted access to a purpose built dataset prior to undertaking this analysis represents a significant catalyst for progress, and surely expedites the process of gaining greater understanding in this domain.}
-\subsection{Corporate Social Responsibility}
-{The dataset provided by Darie Moldovan and Simona Mutu contains records of 1400 companies, with 52 features. As mentioned previously, these features consider solely corporate governance as a predictor for success, and this study aims to extend this to consider other areas. One such area is corporate social responsibility (CSR).\\\\
---------------
-Potential Sources of Data
-\begin{enumerate}
-\item{Bloomberg? }\\
-\url {https://www.library.hbs.edu/docs/bloomberg%20esg%20functionality%20map.pdf}
-\item{\url{https://www.csrhub.com/csrhub-meets-your-sustainability-needs/}}
-\item{\url{https://www.researchgate.net/post/Are_there_any_publically_available_data_sets_or_sources_that_provide_Corporate_Social_Responsibility_CSR_scores_of_companies2}}
-\item{\cite{rahdari2015designing}}
-\item{\url{http://financial.thomsonreuters.com/content/dam/openweb/documents/pdf/tr-com-financial/methodology/corporate-responsibility-ratings.pdf}}
-\end{enumerate}}
-\subsection{Environmental Performance}
-{Another area shown to be promising in terms of predicting corporate economic success is the environmental performance of a company. in other words, the measures put in place by a company and efforts made to reduce their footprint on the natural environment may be a good indicator of how successful that company is. \\\\
---------------
-Potential Sources of Data
-\begin{enumerate}
-\item{Bloomberg? }\\
-\url {https://www.library.hbs.edu/docs/bloomberg%20esg%20functionality%20map.pdf}
-\\
-"Bloomberg for Environmental, social and governance data"\\
-Looks like you can get "Emissions and Energy Markets" data.
-\end{enumerate}
-Only research I've read is theoretical. Need to investigate further where data is going to come from here.
+{The primary source of data for this study comes from the authors of the paper it extends. Darie Moldovan and Simona Mutu were kind enough to provide the data they used in their analysis, sending the complete set and granting permission to use it in this study. This is highly beneficial. Firstly, the results from the current analysis can be placed in a much clearer context, since we can directly and numerically compare the findings of this study to the original and identify areas of improvement. Secondly, being granted access to a purpose built dataset prior to undertaking this analysis represents a significant catalyst for progress, and expedites the process of gaining greater understanding in this domain. The statements made by the authors based on identified correlations can also be used in the casual inference stage of this study, as the basis for the formulation of research questions and dependant variable and treatment pairs.}\\\\
+{There are three core datasets provided by Darie Moldovan and Simona Mutu, each covering 52 features for three different stock indexes. This includes the S\&P 500 based in the United States, the STOXX 600 based in Europe and the STOXX 300 based in Eastern Europe. Combined, these datasets total 1400 records of companies from the year 2014. The authors used Bloomberg terminals as the repository of this data, which contains a vast amount of financial data on companies across the world.}
+\subsection{New Factors - Independent}
+{Part of this study is the exploration of new factors that could be introduced into the analysis to better explain corporate success. In other words, new independent variables to append onto the core dataset that extend the original research. A Bloomberg terminal was used to acquire all data outlined in this section, due to the ease as which features could be found, extracted and integrated with the original dataset.}\\\\
+{Discussed in section \ref{EnvironmentalConsiderations} is the importance of environmental performance and its influence on overall economic health. To the end an exploration of the data available in Bloomberg was conducted, however it was found for the majority of environment-related features, the amount of missing data was prohibitive to its inclusion. Thus, it was decided to use a propriety score formulated by Bloomberg themselves as a proxy for performance in this area. The logic behind this is outlined in section \ref{EnvironmentalConsiderations}.}\\\\
+{One new independent feature introduced is total CEO compensation for each company in this study, which is likely to be an interesting addition to this study as discussed in section \ref{execComp}. CEO compensation is readily available in Bloomberg for the year under study, and so it is relatively ease to append this measure onto the core dataset.}
+\subsection{New Factors - Dependent}
+{Another goal of this study is to explore other dependant variables, i.e features of corporate success (or otherwise) that could be explained by the original dataset. Again, Bloomberg was used as the repository of this data due to its ease of integration with the data provided by Darie Moldovan and Simona Mutu.}\\\\
+{This study introduces a single new dependent variable, namely the Beneish M Score as outlined in section \ref{comPerform}. The M Score uses an aggregate of various financial ratios of a specific company to calculate the probability of that company intentionally manipulating it's reported earnings. There are two variations on this score, one using a combination of five financial ratios and the other adding an extra three. All variables were derived from Bloomberg for the appropriate years, and appended to the original dataset.   
+  }
+%\subsection{Corporate Social Responsibility}
+%{The dataset provided by Darie Moldovan and Simona Mutu contains records of 1400 companies, with 52 features. As mentioned previously, these features consider solely corporate governance as a predictor for success, and this study aims to extend this to consider other areas. One such area is corporate social responsibility (CSR).\\\\
+%--------------
+%Potential Sources of Data
+%\begin{enumerate}
+%\item{Bloomberg? }\\
+%\url {https://www.library.hbs.edu/docs/bloomberg%20esg%20functionality%20map.pdf}
+%\item{\url{https://www.csrhub.com/csrhub-meets-your-sustainability-needs/}}
+%\item{\url{https://www.researchgate.net/post/Are_there_any_publically_available_data_sets_or_sources_that_provide_Corporate_Social_Responsibility_CSR_scores_of_companies2}}
+%\item{\cite{rahdari2015designing}}
+%\item{\url{http://financial.thomsonreuters.com/content/dam/openweb/documents/pdf/tr-com-financial/methodology/corporate-responsibility-ratings.pdf}}
+%\end{enumerate}}
+%\subsection{Environmental Performance}
+%{Another area shown to be promising in terms of predicting corporate economic success is the environmental performance of a company. in other words, the measures put in place by a company and efforts made to reduce their footprint on the natural environment may be a good indicator of how successful that company is. \\\\
+%--------------
+%Potential Sources of Data
+%\begin{enumerate}
+%\item{Bloomberg? }\\
+%\url {https://www.library.hbs.edu/docs/bloomberg%20esg%20functionality%20map.pdf}
+%\\
+%"Bloomberg for Environmental, social and governance data"\\
+%Looks like you can get "Emissions and Energy Markets" data.
+%\end{enumerate}
+%Only research I've read is theoretical. Need to investigate further where data is going to come from here.
 
-}
+%}
 \section{Data Pre-Processing and Reduction}
-{Interestingly, \cite{moldovan2015learning} made the decision to remove any observations in their data that had missing values, or not enough information to calculate key metrics. These emissions are likely justified, since incomplete data (and especially miscalculated metrics) would unfairly skew the properties of that observation and misrepresent it in the data. Any conclusions that were made using these observations could be fundamentally flawed. In the current study, if data cannot be found to complete these records a similar approach will be used. \\\\
+{Interestingly, \cite{moldovan2015learning} made the decision to remove any observations in their data that had missing values in the dependant variable, or not enough information to calculate those values. It could be argued that these emissions are justified, since incomplete data could unfairly skew the properties of that observation and misrepresent it in the data. Any conclusions that were made using these observations could be fundamentally flawed. Below is table outlining the degree of missing dependant variables per dataset. 
+\\\\
+\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+ \hline
+ Dataset & Row Count & Missing Tobins Q Score & Missing Altman Z Score\\
+ \hline
+ SPX & 500 & 4  & 81 \\
+ SXXP &   600  & 4  & 127 \\
+ EEBP & 300 & 3 &  65 \\
+ \hline
+\end{tabular}\\\\
+Since removing rows with missing dependant variables influences the row count quite significantly, especially in the case of Altman Z Score, an analysis will be carried out to investigate the need to do so. \\
+
 \cite{moldovan2015learning} also state that they remove outliers in the data, citing a desire to prevent {\it "data errors"}. We feel they do not provide convincing evidence that the outliers are fair emissions. It is generally accepted that outliers must be proven to be mistakes at the data collection stage, or invalid in some other way to justify leaving them out of the analysis. Without such justification, outliers are valid data points and may prove crucial to the formulation of a faithful model. While they state that removal in total only discounts 122 observations, this amounts to roughly 8\% of the original dataset. The current study carries out analysis with and without outliers, with a view to inspecting their influence. 
 \section{Data Mining, Algorithms and Software}
 Notes \\\\

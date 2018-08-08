@@ -1,11 +1,7 @@
-%   Template for a LaTeX MSc Business Analytics Dissertation/Practicum
-%   Sean McGarraghy and James McDermott
-%   Remove these first three lines when starting your own document
-%
 %   MSc Business Analytics Dissertation/Practicum
 %
-%   Title:     Aaa Bbbbbbb Cccccccccc
-%   Author(s): Xxxxxx Xxxxxxxxx and Yyy Yyyyyyyyy
+%   Title:     The Relationship Between Corporate Governance and Company Performance
+%   Author(s): Conor Reid
 %
 %   This file is the top level file for a dissertation.  It contains:
 %   - usepackage commands for any packages required
@@ -20,13 +16,6 @@
 %   Chapter 6: Discussion
 %   Chapter 7: Conclusions
 %
-%   Change Control:
-%   When     Who   Ver  What
-%   -------  ----  ---  --------------------------------------------------------------
-%   01Sep10  SMcG  0.0  Developed MSc Business Analytics Dissertation LaTeX template
-%   02Sep16  JMcD  0.1  Updated template
-%   01Apr17  XX    0.2  Begun dissertation proper
-%   02Apr17  YY    0.3  Added ....
 %
 
 %% To LaTeX (compile) your whole document, run these 4 commands in the order given (I run them from
@@ -55,7 +44,8 @@
 % the bibtotoc may be needed to make your references appear in the Contents, also liststotoc etc
 
 % Preamble
-
+\usepackage{color, colortbl}
+\definecolor{gray}{gray}{0.9}
 % LaTeX Packages to use
 \usepackage{makeidx}
 %\usepackage{showidx} % for drafts: shows in margin what will be indexed
@@ -271,6 +261,8 @@ University College Dublin
 
 \cleardoublepage
 \tableofcontents
+\clearpage
+\listoftables
 %\renewcommand{\cftchapfont}{}
 
 % Note: to show subfigures, subtables (if any) in the appropriate list below, uncomment the following command
