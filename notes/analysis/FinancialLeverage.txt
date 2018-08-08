@@ -1,0 +1,12 @@
+Financial Leverage
+-----------
+
+Dict
+debt securities - financial instrument sold to an investor. promise to repay face amount + interest until matures. eg bonds (gov, corporate). owned and traded by individuals / institutions and governments 
+
+
+> https://www.investopedia.com/articles/investing/111813/optimal-use-financial-leverage-corporate-capital-structure.asp
+a company needs capital in order to operate 
+to raise that capital, most companies issue debt securities or sell stock 
+the amount of debt and equity that makes up a companies capital structure has many risk and return implications. 
+the capital structure is how a firm finances its operations and growth by using different sources of funds. w

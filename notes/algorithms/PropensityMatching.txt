@@ -1,0 +1,53 @@
+Propensity score matching
+-----------
+used for statistical analysis of observational data
+technique that attempts to estimate the effect of a treatment by accounting for the covariates that predict receiving the treatment
+attempts to reduce the bias due to confounding variables
+instead of simply comparing those who received the treatment and those who didn't
+implements the rubbing casual model for observational studies
+
+you control for confounders, because the apparent different in outcome between the treated and control groups may depend on characteristics that affected whether or not a unit received a given treatment instead of due to the effect of the treatment
+in randomised experiments, the randomisation enables unbiased estimation of treatment effects 
+for each covariate, randomisation implies that treatment groups will be balanced on average 
+but for observational studies, the assignment of treatments to research subjects is not typically random 
+matching attempts to mimic randomisation by creating a sample of units that received the treatment that is comparable on all observed covariates to a sample of units that did not receive the treatment
+
+psm is for cases of causal inference and selection bias in non-experimental settings in which 
+	few units in the non-treatment / treatment are comparable
+	selecting a subset of units is difficult due to high dimensionality 
+
+in normal matching we match on a single characteristic that distinguishes the treatment and control groups 
+but if the groups do not have substantial overlap, then substantial error may be introduced 
+psm employs a predicted probability of group membership based on observed predictors, usually obtained from logistic regression to create a counterfactual group
+propensity scores may be used for matching or as covariates 
+
+
+a propensity score is the probability of a unit being assigned to a particular treatment given a set of observed covariates 
+propensity scores are used to reduce selection bias by equating groups based on these covariates 
+
+
+Advantages / Disadvantages
+psm estimates an average treatment effect from observational data
+it balances treatment and control groups on a large number of covariates without losing a large number of observations
+
+only accounts for observed (and observable) covariates 
+that is, factors that affect assignment to treatment and outcome but that cannot be observed cannot be accounted for in the matching procedure
+any hidden bias due to latent variables may remain after matching 
+
+also requires large samples with substantial overlap between treatment and control groups 
+
+
+
+
+Rubin causal model
+-----------
+implemented by propensity matching
+its an approach to the statistical analysis of case of effect based on the framework of potential outcomes 
+been extended into a general framework for thinking about causation in both observational and experimental studies
+
+
+
+
+
+
+

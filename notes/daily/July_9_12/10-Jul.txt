@@ -1,4 +1,17 @@
 TODO
 ----
+Write a mysql table for dataset, per target, per statement
 
-Write to MySQL the diff between subsetting / not on appendix A vars?
+Alter causal estimation code to run agianst each of the above
+
+Go back over results to see what makes sense
+
+
+
+OUTCOMES
+-----
+New data tables for each statement
+akelleh code runs for each (where possible) 
+bug fixes on various parts, results thus more solid
+some pretty decent results coming out in terms of magnitude of treatments
+
