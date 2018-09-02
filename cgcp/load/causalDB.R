@@ -245,10 +245,10 @@ spx_fl <- function(){
   
   dontScale <- c(grep("Fincl..l", colnames(spx.imputed)), grep("Tobins.Q.class", colnames(spx.imputed)),  grep("AZS.class.Binary", colnames(spx.imputed)))
   spx.imputed[, -dontScale] <- data.frame(scale(spx.imputed[, -dontScale]))
-  spx.imputed["Fincl.l.treatment"] <- ifelse(spx.imputed$Fincl..l < 2.5, 1, 0)
+  spx.imputed["Fincl.l.treatment"] <- ifelse(spx.imputed$Fincl..l < 4, 1, 0)
   spx.imputed$Fincl.l.treatment <- as.factor(spx.imputed$Fincl.l.treatment)
   spx.imputed$Fincl.l.treatment <- ifelse(spx.imputed$Fincl.l.treatment == 0, as.double(0), as.double(1))
-  
+  summary(spx.imputed)
   dbWriteTable(mydb_causal, value = spx.imputed, name = "spx_fl", overwrite = TRUE,row.names=FALSE ) 
   remove(list = ls()[!(grepl("mydb_", ls()))])
   
@@ -287,7 +287,7 @@ spx_indepDir_FormerCEOBoard <- function(){
   
 }
 spx_ceo_comp <- function() {
-  spx.ceo.imputed <- dbReadTable(conn=mydb_imputed,name='spx_ceo_comp')
+  spx.ceo.imputed <- dbReadTable(conn=mydb_imputed,name='spx_cgcp')
   drops <- c(
     "Tobins.Q",
     "AZS"
@@ -317,7 +317,7 @@ spx_ceo_comp <- function() {
   
 }
 spx_csr <- function(){
-  spx.csr <- dbReadTable(conn=mydb_imputed,name='spx_csr')
+  spx.csr <- dbReadTable(conn=mydb_imputed,name='spx_cgcp')
   drops <- c(
     "Tobins.Q",
     "AZS"
@@ -365,7 +365,7 @@ spx_indep_dir_fincl_lev <- function (){
   #
   #
   #
-  spx.mscore.imputed <- dbReadTable(conn=mydb_imputed,name='spx_mscore')
+  spx.mscore.imputed <- dbReadTable(conn=mydb_imputed,name='spx_cgcp')
   drops <- c(
     "Tobins.Q",
     "Tobins.Q.class",
@@ -407,7 +407,7 @@ spx_fl <- function(){
   #
   #
   #
-  spx.mscore.imputed <- dbReadTable(conn=mydb_imputed,name='spx_mscore')
+  spx.mscore.imputed <- dbReadTable(conn=mydb_imputed,name='spx_cgcp')
   drops <- c(
     "Tobins.Q",
     "Tobins.Q.class",
@@ -449,6 +449,7 @@ spx_fl <- function(){
 
 spx_indep_dir_fincl_lev()
 spx_fl()
+
 
 #**************************************************
 #           SXXP

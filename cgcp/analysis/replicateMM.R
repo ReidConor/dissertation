@@ -10,10 +10,9 @@ mydb.results <- dbConnect(MySQL(), user='root', password='', dbname='mm_results'
 spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
 eebp <- dbReadTable(conn=mydb,name='eebp')
+spx.cgcp <- dbReadTable(conn=mydb,name='spx_cgcp')
 
-#spx <- dbReadTable(conn=mydb,name='spx_sub_app_a')
-#sxxp <- dbReadTable(conn=mydb,name='sxxp_sub_app_a')
-#eebp <- dbReadTable(conn=mydb,name='eebp_sub_app_a')
+summary(spx)
 
 training.split=2/3 #proportion of data that will be dedicated to training data subsets 
 
@@ -29,7 +28,7 @@ training.split=2/3 #proportion of data that will be dedicated to training data s
 # Returns:
 #   A number of elements of the results of adaboost
 adaboost <- function(dataset, target) {
-  set.seed(1)
+  #set.seed(1)
   drops <- c("Ticker",
              "AZS.class",
              "AZS",
@@ -49,6 +48,21 @@ adaboost <- function(dataset, target) {
   
   data.reduced[[target]]=as.factor(data.reduced[[target]])
   colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  
+  if (deparse(substitute(dataset)) != "eebp"){
+    mod <- lm(as.numeric(target) ~ ., data = data.reduced)
+    cooksd <- cooks.distance(mod)
+    print(cooksd)
+    
+     influential <- na.omit(as.numeric(names(cooksd)[(cooksd > (4*mean(cooksd, na.rm = T)))]))
+    print(influential)
+    if (length(!is.na(influential)) > 0){
+      data.reduced <- data.reduced[-influential,]
+      plot(cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+      abline(h = 4*mean(cooksd, na.rm=T), col="red")  # add cutoff line
+      text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4*mean(cooksd, na.rm=T),names(cooksd),""), col="red")  # add labels
+    }
+  }
   
   len <- length(data.reduced[,1])
   sub <- sample(1:len,len*training.split)
@@ -118,9 +132,11 @@ adaboost <- function(dataset, target) {
 }
 #call adaboost on each
 spx.adaboost.tobin.results=adaboost(spx,"Tobins.Q.class")
+spx.cgcp.adaboost.tobin.results=adaboost(spx.cgcp,"Tobins.Q.class")
 sxxp.adaboost.tobin.results=adaboost(sxxp,"Tobins.Q.class")
 eebp.adaboost.tobin.results=adaboost(eebp,"Tobins.Q.class")
 spx.adaboost.altman.results=adaboost(spx,"AZS.class")
+spx.cgcp.adaboost.altman.results=adaboost(spx.cgcp,"AZS.class")
 sxxp.adaboost.altman.results=adaboost(sxxp,"AZS.class")
 eebp.adaboost.altman.results=adaboost(eebp,"AZS.class")
 
@@ -160,6 +176,22 @@ j48 <- function(dataset, target){
   
   data.reduced[[target]]=as.factor(data.reduced[[target]])
   colnames(data.reduced)[colnames(data.reduced) == target] <- 'target'
+  print(summary(data.reduced))
+  
+  if (deparse(substitute(dataset)) != "eebp"){
+    mod <- lm(as.numeric(target) ~ ., data = data.reduced)
+    cooksd <- cooks.distance(mod)
+    print(cooksd)
+    
+    influential <- na.omit(as.numeric(names(cooksd)[(cooksd > (4*mean(cooksd, na.rm = T)))]))
+    print(influential)
+    if (length(!is.na(influential)) > 0){
+       data.reduced <- data.reduced[-influential,]
+      plot(cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+      abline(h = 4*mean(cooksd, na.rm=T), col="red")  # add cutoff line
+      text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4*mean(cooksd, na.rm=T),names(cooksd),""), col="red")  # add labels
+    }
+  }
   
   data.reduced.train=data.reduced[sub,]
   data.reduced.test=data.reduced[-sub,]
@@ -223,10 +255,12 @@ j48 <- function(dataset, target){
   
 }
 #call J48[C5.0] on each
-spx.j48.tobin.results=j48(dataset=spx,target="Tobins.Q.class")
+spx.j48.tobin.results=j48(spx,"Tobins.Q.class")
+spx.cgcp.j48.tobin.results=j48(spx.cgcp,"Tobins.Q.class")
 sxxp.j48.tobin.results=j48(sxxp,"Tobins.Q.class")
 eebp.j48.tobin.results=j48(eebp,"Tobins.Q.class")
 spx.j48.altman.results=j48(spx,"AZS.class")
+spx.cgcp.j48.altman.results=j48(spx.cgcp,"AZS.class")
 sxxp.j48.altman.results=j48(sxxp,"AZS.class")
 eebp.j48.altman.results=j48(eebp,"AZS.class")
 
@@ -248,6 +282,17 @@ spx.altman.imp <- setDT(spx.altman.imp, keep.rownames = TRUE)[]
 colnames(spx.altman.imp) <- c("Var","Imp")
 spx.altman.imp.head <- head(spx.altman.imp[order(-spx.altman.imp$Imp),],10)
 dbWriteTable(mydb.results, value = spx.altman.imp.head, name = "spx_altman_imp_vars", overwrite = TRUE, row.names=FALSE)
+
+spx.cgcp.tobin.imp <- data.frame(spx.cgcp.adaboost.tobin.results$var.importance) 
+spx.cgcp.tobin.imp <- setDT(spx.cgcp.tobin.imp, keep.rownames = TRUE)[]
+colnames(spx.cgcp.tobin.imp) <- c("Var","Imp")
+spx.cgcp.tobin.imp.head <- head(spx.cgcp.tobin.imp[order(-spx.cgcp.tobin.imp$Imp),],10)
+dbWriteTable(mydb.results, value = spx.cgcp.tobin.imp.head, name = "spx_cgcp_tobin_q_imp_vars", overwrite = TRUE, row.names=FALSE)
+spx.cgcp.altman.imp <- data.frame(spx.cgcp.adaboost.altman.results$var.importance) 
+spx.cgcp.altman.imp <- setDT(spx.cgcp.altman.imp, keep.rownames = TRUE)[]
+colnames(spx.cgcp.altman.imp) <- c("Var","Imp")
+spx.cgcp.altman.imp.head <- head(spx.cgcp.altman.imp[order(-spx.cgcp.altman.imp$Imp),],10)
+dbWriteTable(mydb.results, value = spx.cgcp.altman.imp.head, name = "spx_cgcp_altman_imp_vars", overwrite = TRUE, row.names=FALSE)
 
 sxxp.tobin.imp <- data.frame(sxxp.adaboost.tobin.results$var.importance) 
 sxxp.tobin.imp <- setDT(sxxp.tobin.imp, keep.rownames = TRUE)[]
@@ -285,6 +330,28 @@ to.write.spx <- data.frame(list (
   as.numeric(spx.adaboost.tobin.results$roc$auc) #roc area
 ))
 colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.spx.cgcp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "spx-cgcp",
+  "Tobins.Q.class", 
+  spx.cgcp.adaboost.tobin.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  spx.cgcp.adaboost.tobin.results$confusion.caret$byClass[1], #sensitivity / precision class 0
+  spx.cgcp.adaboost.tobin.results$confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(spx.cgcp.adaboost.tobin.results$roc$auc) #roc area
+))
+colnames(to.write.spx.cgcp) <- c(
   "DateStamp",
   "Algorithm",
   "DataSet",
@@ -339,7 +406,8 @@ colnames(to.write.eebp) <- c(
   "Precision Class 1",
   "ROC area"
 )
-dbWriteTable(mydb.results, value = to.write.spx, name = "tobin_q_results", overwrite = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx.cgcp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.sxxp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.eebp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 to.write.spx <- data.frame(list (
@@ -355,6 +423,30 @@ to.write.spx <- data.frame(list (
   as.numeric(spx.adaboost.altman.results$roc$auc) #roc area
 ))
 colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.spx.cgcp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "Adaboost",
+  "spx-cgcp",
+  "Altman.Z",
+  spx.cgcp.adaboost.altman.results$accuracy, #correctly classified instances
+  NA, #coverage of cases
+  spx.cgcp.adaboost.altman.results$confusion.caret$byClass[1,3], #precision class 0
+  spx.cgcp.adaboost.altman.results$confusion.caret$byClass[2,3], #precision class 1
+  spx.cgcp.adaboost.altman.results$confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(spx.cgcp.adaboost.altman.results$roc$auc) #roc area
+))
+colnames(to.write.spx.cgcp) <- c(
   "DateStamp",
   "Algorithm",
   "DataSet",
@@ -414,10 +506,10 @@ colnames(to.write.eebp) <- c(
   "Precision Class 2",
   "ROC area"
 )
-dbWriteTable(mydb.results, value = to.write.spx, name = "altman_z_results", overwrite = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx, name = "altman_z_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx.cgcp, name = "altman_z_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.sxxp, name = "altman_z_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.eebp, name = "altman_z_results", append = TRUE, row.names=FALSE)
-
 to.write.spx <- data.frame(list (
   format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
   "J48", #algo
@@ -430,6 +522,28 @@ to.write.spx <- data.frame(list (
   as.numeric(spx.j48.tobin.results$tree.roc$auc) #roc area
 ))
 colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "ROC area"
+)
+to.write.spx.cgcp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "spx-cgcp",
+  "Tobins.Q.class",  
+  spx.cgcp.j48.tobin.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  spx.cgcp.j48.tobin.results$tree.confusion.caret$byClass[1], #sensitivity / precision class 0
+  spx.cgcp.j48.tobin.results$tree.confusion.caret$byClass[2], #specificity / precision class 1
+  as.numeric(spx.cgcp.j48.tobin.results$tree.roc$auc) #roc area
+))
+colnames(to.write.spx.cgcp) <- c(
   "DateStamp",
   "Algorithm",
   "DataSet",
@@ -485,6 +599,7 @@ colnames(to.write.eebp) <- c(
   "ROC area"
 )
 dbWriteTable(mydb.results, value = to.write.spx, name = "tobin_q_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx.cgcp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.sxxp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.eebp, name = "tobin_q_results", append = TRUE, row.names=FALSE)
 
@@ -502,6 +617,30 @@ to.write.spx <- data.frame(list (
   as.numeric(spx.j48.altman.results$tree.roc$auc) #roc area
 ))
 colnames(to.write.spx) <- c(
+  "DateStamp",
+  "Algorithm",
+  "DataSet",
+  "Target",
+  "Correctly Classified Instances", 
+  "Coverage Of cases", 
+  "Precision Class 0",
+  "Precision Class 1",
+  "Precision Class 2",
+  "ROC area"
+)
+to.write.spx.cgcp <- data.frame(list (
+  format(as.POSIXlt(Sys.time()),'%Y-%m-%d %H:%M:%S'),
+  "J48", #algo
+  "spx-cgcp",
+  "Altman.Z",  
+  spx.cgcp.j48.altman.results$tree.confusion.caret$overall[1], #correctly classified instances
+  NA, #coverage of cases
+  spx.cgcp.j48.altman.results$tree.confusion.caret$byClass[1,3], #precision class 0
+  spx.cgcp.j48.altman.results$tree.confusion.caret$byClass[2,3], #precision class 1
+  spx.cgcp.j48.altman.results$tree.confusion.caret$byClass[3,3], #precision class 2
+  as.numeric(spx.cgcp.j48.altman.results$tree.roc$auc) #roc area
+))
+colnames(to.write.spx.cgcp) <- c(
   "DateStamp",
   "Algorithm",
   "DataSet",
@@ -562,6 +701,7 @@ colnames(to.write.eebp) <- c(
   "ROC area"
 )
 dbWriteTable(mydb.results, value = to.write.spx, name = "altman_z_results", append = TRUE, row.names=FALSE)
+dbWriteTable(mydb.results, value = to.write.spx.cgcp, name = "altman_z_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.sxxp, name = "altman_z_results", append = TRUE, row.names=FALSE)
 dbWriteTable(mydb.results, value = to.write.eebp, name = "altman_z_results", append = TRUE, row.names=FALSE)
 

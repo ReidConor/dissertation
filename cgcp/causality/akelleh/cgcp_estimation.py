@@ -279,15 +279,15 @@ def indepDirFinlL(dataset, target, data_table, imp_vars_table, imp_limit=10):
 
 
     #now write results to mysql
-    #conn = MySQLdb.connect(host="localhost",
-    #                     user="root",
-    #                     passwd="",
-    #                     db="causal_results")
-    #cur = conn.cursor()
-    #query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
-    #cur.execute(query)
-    #conn.commit()
-    #conn.close()
+    conn = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="",
+                         db="causal_results")
+    cur = conn.cursor()
+    query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...but also the presence of an independent lead director in the company along with a financial leverage higher than 2.5 incur a higher risk of bankruptcy.")
+    cur.execute(query)
+    conn.commit()
+    conn.close()
     print("Done")
 
 def finlL(dataset, target, data_table, imp_vars_table, imp_limit=10):
@@ -326,15 +326,15 @@ def finlL(dataset, target, data_table, imp_vars_table, imp_limit=10):
         print ("")
 
         #now write results to mysql
-        #conn = MySQLdb.connect(host="localhost",
-        #                     user="root",
-        #                     passwd="",
-        #                     db="causal_results")
-        #cur = conn.cursor()
-        #query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
-        #cur.execute(query)
-        #conn.commit()
-        #conn.close()
+        conn = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="",
+                             db="causal_results")
+        cur = conn.cursor()
+        query = """ insert into akelleh_results values ('%s','%s','%s','%s','%s','%s');  """ % (now,dataset,treatment,target,str(ATE_results),"...and that a financial leverage less than 4 is needed in order to be on the upper side of the Tobins Q ratio")
+        cur.execute(query)
+        conn.commit()
+        conn.close()
         print("Done")
 
 def indepDirFormerCEOBoard(dataset, target, data_table, imp_vars_table, imp_limit=10):
@@ -474,14 +474,14 @@ if __name__ == "__main__":
     #matching in general is good here
     #ageRange("eebp", "Tobins.Q.class", "eebp_agerange", "eebp_tobin_q_imp_vars")
     #ageRange("eebp", "AZS.class.Binary", "eebp_agerange", "eebp_altman_imp_vars")
-    #ageRange("spx", "Tobins.Q.class", "spx_agerange", "spx_tobin_q_imp_vars", imp_limit=8)
-    #ageRange("spx", "AZS.class.Binary", "spx_agerange", "spx_altman_imp_vars", imp_limit=8)
+    #ageRange("spx", "Tobins.Q.class", "spx_agerange", "spx_tobin_q_imp_vars", imp_limit=7)
+    #ageRange("spx", "AZS.class.Binary", "spx_agerange", "spx_altman_imp_vars", imp_limit=7)
     #ageRange("sxxp", "Tobins.Q.class", "sxxp_agerange", "sxxp_tobin_q_imp_vars")
     #ageRange("sxxp", "AZS.class.Binary", "sxxp_agerange", "sxxp_altman_imp_vars")
 
     #matching not great for first 2/3, good after that
     #indepChaFCEO("eebp","Tobins.Q.class", "eebp_indepChFmlCEO", "eebp_tobin_q_imp_vars", imp_limit=6)
-    #indepChaFCEO("eebp","AZS.class.Binary", "eebp_indepChFmlCEO", "eebp_altman_imp_vars")
+    #indepChaFCEO("eebp","AZS.class.Binary", "eebp_indepChFmlCEO", "eebp_altman_imp_vars", imp_limit=8)
     #indepChaFCEO("spx", "Tobins.Q.class", "spx_indepChFmlCEO", "spx_tobin_q_imp_vars")
     #indepChaFCEO("spx", "AZS.class.Binary", "spx_indepChFmlCEO", "spx_altman_imp_vars")
     #indepChaFCEO("sxxp", "Tobins.Q.class", "sxxp_indepChFmlCEO", "sxxp_tobin_q_imp_vars", imp_limit=9)
@@ -506,18 +506,20 @@ if __name__ == "__main__":
     ##indepDirFinlL("eebp", "eebp_indepdirfincl", "eebp_altman_imp_vars") #not enough samples are treated
     #indepDirFinlL("spx","AZS.class.Binary", "spx_indepdirfincl", "spx_altman_imp_vars")
     #indepDirFinlL("spx","Tobins.Q.class", "spx_indepdirfincl", "spx_tobin_q_imp_vars",imp_limit=8)
-    #indepDirFinlL("sxxp", "Tobins.Q.class", "sxxp_indepdirfincl", "sxxp_tobin_q_imp_vars")
+    #indepDirFinlL("sxxp", "Tobins.Q.class", "sxxp_indepdirfincl", "sxxp_tobin_q_imp_vars", imp_limit=9)
     #indepDirFinlL("sxxp", "AZS.class.Binary", "sxxp_indepdirfincl", "sxxp_altman_imp_vars",imp_limit=8)
     #indepDirFinlL("spx_mscore","MScore", "spx_mscore_indepdirfincl", "spx_tobin_q_imp_vars", imp_limit=3)
 
     #very few variables actually being used here, overall not great but might be usable
     #finlL("eebp", "Tobins.Q.class" , "eebp_fl", "eebp_tobin_q_imp_vars")
     #finlL("eebp", "AZS.class.Binary" , "eebp_fl", "eebp_altman_imp_vars", imp_limit=4)
-    #finlL("spx", "Tobins.Q.class", "spx_fl", "spx_tobin_q_imp_vars", imp_limit=4)
+    #finlL("spx", "Tobins.Q.class", "spx_fl", "spx_tobin_q_imp_vars", imp_limit=10)
     #finlL("spx", "AZS.class.Binary", "spx_fl", "spx_altman_imp_vars", imp_limit=2)
     #finlL("sxxp", "Tobins.Q.class", "sxxp_fl", "sxxp_tobin_q_imp_vars", imp_limit=1)
     #finlL("sxxp", "AZS.class.Binary", "sxxp_fl", "sxxp_altman_imp_vars", imp_limit=5) #this is decent
     #finlL("spx_mscore", "MScore", "spx_mscore_fl", "spx_tobin_q_imp_vars", imp_limit=1)
+    #finlL("spx_mscore", "EightVarEq", "spx_cgcp", "spx_tobin_q_imp_vars", imp_limit=1)
+
 
     #not very good
     ##indepDirFormerCEOBoard("eebp", "Tobins.Q.class" , "eebp_indepdirformerceo", "eebp_tobin_q_imp_vars", imp_limit=1 )
@@ -528,16 +530,16 @@ if __name__ == "__main__":
     #indepDirFormerCEOBoard("sxxp", "AZS.class.Binary" , "sxxp_indepdirformerceo", "sxxp_altman_imp_vars")
 
     #good
-    #ceoPay("spx", "Tobins.Q.class" , "spx_ceopay", "spx_tobin_q_imp_vars")
-    #ceoPay("spx", "AZS.class.Binary" , "spx_ceopay", "spx_altman_imp_vars")
+    #ceoPay("spx_ceopay", "Tobins.Q.class" , "spx_ceopay", "spx_tobin_q_imp_vars")
+    #ceoPay("spx_ceopay", "AZS.class.Binary" , "spx_ceopay", "spx_altman_imp_vars")
 
     #some good, some not so good
     #esg("spx", "Tobins.Q.class" , "esg_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars",imp_limit=9 )
     #esg("spx", "AZS.class.Binary" , "esg_disc_over_avg", "spx_csr", "spx_altman_imp_vars")
     #esg("spx", "Tobins.Q.class" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_tobin_q_imp_vars",imp_limit=6)
     #esg("spx", "AZS.class.Binary" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_altman_imp_vars",imp_limit=5)
-    esg("spx", "Tobins.Q.class" , "social_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars") #pretty good matching
-    esg("spx", "AZS.class.Binary" , "social_disc_over_avg", "spx_csr", "spx_altman_imp_vars",imp_limit=8) #pretty good matching
+    #esg("spx", "Tobins.Q.class" , "social_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars") #pretty good matching
+    #esg("spx", "AZS.class.Binary" , "social_disc_over_avg", "spx_csr", "spx_altman_imp_vars",imp_limit=8) #pretty good matching
     #esg("spx", "Tobins.Q.class" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_tobin_q_imp_vars")
     #esg("spx", "AZS.class.Binary" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_altman_imp_vars")
     #esg("spx", "Tobins.Q.class" , "ANTI.BRIBERY_ETHICS_POLICY", "spx_csr", "spx_tobin_q_imp_vars")

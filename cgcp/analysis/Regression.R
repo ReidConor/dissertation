@@ -9,11 +9,11 @@ mydb.imputed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_im
 mydb.results <- dbConnect(MySQL(), user='root', password='', dbname='regression_results')
 
 spx.complete <- dbReadTable(conn=mydb.complete,name='spx')
+spx.cgcp <- dbReadTable(conn=mydb.imputed,name='spx_cgcp')
 spx <- dbReadTable(conn=mydb.imputed,name='spx')
 sxxp <- dbReadTable(conn=mydb.imputed,name='sxxp')
 eebp <- dbReadTable(conn=mydb.imputed,name='eebp')
-spx.ceo.comp <- dbReadTable(conn=mydb.imputed,name='spx_ceo_comp')
-spx.mscore <- dbReadTable(conn=mydb.imputed,name='spx_mscore')
+
 
 training.split=2/3
 #multiple linear regression
@@ -276,53 +276,109 @@ regLinearRegressionMultiAlphaLamdba_v2 <- function(dataset, target){
   return(result) 
   
 }
-#regular spx with tobin as target
-spx.complete.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "Tobins.Q")
-spx.complete.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "AZS")
+
 spx.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx, "Tobins.Q")
 spx.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx, "AZS")
+spx.complete.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "Tobins.Q")
+spx.complete.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx.complete, "AZS")
+spx.cgcp.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(spx.cgcp, "Tobins.Q")
+spx.cgcp.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(spx.cgcp, "AZS")
+spx.mscore.eight.results = regLinearRegressionMultiAlphaLamdba_v2(spx.cgcp, "EightVarEq")
+spx.mscore.five.results = regLinearRegressionMultiAlphaLamdba_v2(spx.cgcp, "FiveVarEq")
 sxxp.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(sxxp, "Tobins.Q")
 sxxp.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(sxxp, "AZS")
 eebp.tobin.q.results = regLinearRegressionMultiAlphaLamdba_v2(eebp, "Tobins.Q")
 eebp.altman.z.results = regLinearRegressionMultiAlphaLamdba_v2(eebp, "AZS")
-spx.mscore.eight.results = regLinearRegressionMultiAlphaLamdba_v2(spx.mscore, "EightVarEq")
-spx.mscore.five.results = regLinearRegressionMultiAlphaLamdba_v2(spx.mscore, "FiveVarEq")
+
+
+
+
+
+
+
+# Plot solution paths:
+par(mfrow=c(3,2))
+# For plotting options, type '?plot.glmnet' in R console
+plot(sxxp.tobin.q.results$fit.lasso, xvar="lambda")
+plot(sxxp.tobin.q.results$fit10, main="LASSO")
+
+plot(sxxp.tobin.q.results$fit.ridge, xvar="lambda")
+plot(sxxp.tobin.q.results$fit0, main="Ridge")
+
+plot(sxxp.tobin.q.results$fit.elnet, xvar="lambda")
+plot(sxxp.tobin.q.results$fit5, main="Elastic Net")
+
+plot(main="Lasso")
+data(iris)
+View(iris)
+plot(iris$Sepal.Length, iris$Sepal.Width ,main="Elastic Net")
 
 
 # write to mysql - individual table
 # SPX
+#-------
 to.write.spx.tobin <- data.frame()
 for (i in 0:11) {
   temp <- data.frame(spx.tobin.q.results$alphas[i],spx.tobin.q.results$r2[i],spx.tobin.q.results$RMSE[i])
   to.write.spx.tobin <- rbind(to.write.spx.tobin, temp)
 }
 to.write.spx.tobin["Dependent_Variable"] <- "Tobins.Q"
-colnames(to.write.spx.tobin) <- c("alpha","R2", "RMSE","Dependent_Variable")
+to.write.spx.tobin["Dataset"] <- "spx"
+colnames(to.write.spx.tobin) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
 to.write.spx.altman <- data.frame()
 for (i in 0:11) {
   temp <- data.frame(spx.altman.z.results$alphas[i],spx.altman.z.results$r2[i],spx.altman.z.results$RMSE[i])
   to.write.spx.altman <- rbind(to.write.spx.altman, temp)
 }
 to.write.spx.altman["Dependent_Variable"] <- "Altman.Z"
-colnames(to.write.spx.altman) <- c("alpha","R2", "RMSE","Dependent_Variable")
+to.write.spx.altman["Dataset"] <- "spx"
+colnames(to.write.spx.altman) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
+to.write.spx.cgcp.tobin <- data.frame()
+for (i in 0:11) {
+  temp <- data.frame(spx.cgcp.tobin.q.results$alphas[i],spx.cgcp.tobin.q.results$r2[i],spx.cgcp.tobin.q.results$RMSE[i])
+  to.write.spx.cgcp.tobin <- rbind(to.write.spx.cgcp.tobin, temp)
+}
+to.write.spx.cgcp.tobin["Dependent_Variable"] <- "Tobins.Q"
+to.write.spx.cgcp.tobin["Dataset"] <- "spx-cgcp"
+colnames(to.write.spx.cgcp.tobin) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
+to.write.spx.cgcp.altman <- data.frame()
+for (i in 0:11) {
+  temp <- data.frame(spx.cgcp.altman.z.results$alphas[i],spx.cgcp.altman.z.results$r2[i],spx.cgcp.altman.z.results$RMSE[i])
+  to.write.spx.cgcp.altman <- rbind(to.write.spx.cgcp.altman, temp)
+}
+to.write.spx.cgcp.altman["Dependent_Variable"] <- "Altman.Z"
+to.write.spx.cgcp.altman["Dataset"] <- "spx-cgcp"
+colnames(to.write.spx.cgcp.altman) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
 to.write.spx.mscore.eight <- data.frame()
 for (i in 0:11) {
   temp <- data.frame(spx.mscore.eight.results$alphas[i],spx.mscore.eight.results$r2[i],spx.mscore.eight.results$RMSE[i])
   to.write.spx.mscore.eight <- rbind(to.write.spx.mscore.eight, temp)
 }
 to.write.spx.mscore.eight["Dependent_Variable"] <- "MScore.Eight.Var"
-colnames(to.write.spx.mscore.eight) <- c("alpha","R2", "RMSE","Dependent_Variable")
+to.write.spx.mscore.eight["Dataset"] <- "spx"
+colnames(to.write.spx.mscore.eight) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
 to.write.spx.mscore.five <- data.frame()
 for (i in 0:11) {
   temp <- data.frame(spx.mscore.five.results$alphas[i],spx.mscore.five.results$r2[i],spx.mscore.five.results$RMSE[i])
   to.write.spx.mscore.five <- rbind(to.write.spx.mscore.five, temp)
 }
 to.write.spx.mscore.five["Dependent_Variable"] <- "MScore.Five.Var"
-colnames(to.write.spx.mscore.five) <- c("alpha","R2", "RMSE","Dependent_Variable")
-to.write.spx <- rbind(to.write.spx.tobin, to.write.spx.altman,to.write.spx.mscore.eight,to.write.spx.mscore.five)
+to.write.spx.mscore.five["Dataset"] <- "spx"
+colnames(to.write.spx.mscore.five) <- c("alpha","R2", "RMSE","Dependent_Variable","Dataset")
+#-------
+#-------
+summary(to.write.spx.altman)
+to.write.spx <- rbind(to.write.spx.tobin, to.write.spx.altman,to.write.spx.cgcp.tobin,to.write.spx.cgcp.altman,to.write.spx.mscore.eight,to.write.spx.mscore.five)
 dbWriteTable(mydb.results, value = to.write.spx, name = "spx", overwrite = TRUE, row.names=FALSE)
 
-
+#-------
+#-------
+#-------
 # SXXP
 to.write.sxxp.tobin <- data.frame()
 for (i in 0:11) {
@@ -376,6 +432,10 @@ spx.complete.tobin <- data.frame("spx - complete cases","tobins.q",as.numeric(sp
 colnames(spx.complete.tobin) <- c("dataset", "target", "r2")
 spx.complete.azs <- data.frame("spx - complete cases","asz",as.numeric(spx.complete.altman.z.results$r2[[which.max(spx.complete.altman.z.results$r2)]]))
 colnames(spx.complete.azs) <- c("dataset", "target", "r2")
+spx.cgcp.tobin <- data.frame("spx-cgcp","tobins.q",as.numeric(spx.cgcp.tobin.q.results$r2[[which.max(spx.cgcp.tobin.q.results$r2)]]))
+colnames(spx.cgcp.tobin) <- c("dataset", "target", "r2")
+spx.cgcp.azs <- data.frame("spx-cgcp","asz",as.numeric(spx.cgcp.altman.z.results$r2[[which.max(spx.cgcp.altman.z.results$r2)]]))
+colnames(spx.cgcp.azs) <- c("dataset", "target", "r2")
 spx.tobin <- data.frame("spx","tobins.q",as.numeric(spx.tobin.q.results$r2[[which.max(spx.tobin.q.results$r2)]]))
 colnames(spx.tobin) <- c("dataset", "target", "r2")
 spx.azs <- data.frame("spx","asz",as.numeric(spx.altman.z.results$r2[[which.max(spx.altman.z.results$r2)]]))
@@ -396,6 +456,8 @@ regression.results <- rbind(
   regression.results,
   spx.complete.tobin,
   spx.complete.azs,
+  spx.cgcp.tobin,
+  spx.cgcp.azs,
   spx.tobin,
   spx.azs,
   spx.mscore.eight,

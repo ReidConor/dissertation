@@ -1,3 +1,4 @@
+use causal_results;
 drop table akelleh_results_latest;
 create table akelleh_results_latest as
 select

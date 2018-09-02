@@ -123,14 +123,17 @@ spx$Ticker <- as.character(spx$Ticker)
 spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
 spx.mscore <- merge (x=spx, y=spx.mscore.flattened.calc, by.x='Ticker', by.y='Ticker', all.x = TRUE)
 
-dbWriteTable(
-  mydb.processed, 
-  value = spx.mscore, 
-  name = "spx_mscore", 
-  overwrite = TRUE,
-  row.names=FALSE
-) 
-remove(list = ls()[!(grepl("mydb", ls()))])
+
+#dbWriteTable(
+#  mydb.processed, 
+#  value = spx.mscore, 
+#  name = "spx_mscore", 
+#  overwrite = TRUE,
+#  row.names=FALSE
+#) 
+remove(list = ls()[!c(grepl("spx.mscore", ls()))])
+mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov')
+mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 
 
 
@@ -180,16 +183,19 @@ spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.eq.opp, by.x="Ticker", by.y="T
 spx.csr.final <- merge(x=spx.csr.final, y=spx.csr.ant.brib, by.x="Ticker", by.y="Ticker", all.x = TRUE)
 summary(spx.csr.final)
 
-dbWriteTable(
-  mydb.processed, 
-  value = spx.csr.final, 
-  name = "spx_csr", 
-  overwrite = TRUE,
-  row.names=FALSE
-) 
-remove(list = ls()[!(grepl("mydb", ls()))])
-
-
+#dbWriteTable(
+#  mydb.processed, 
+#  value = spx.csr.final, 
+#  name = "spx_csr", 
+#  overwrite = TRUE,
+#  row.names=FALSE
+#) 
+#remove(list = ls()[!(grepl("mydb", ls()))])
+spx.csr.final.mscore <- merge(x=spx.csr.final, y=spx.mscore[c("Ticker","EightVarEq","FiveVarEq","DSRI","GMI","AQI","SGI","DEPI","SGAI","TATA","LVGI")], by.x="Ticker", by.y="Ticker", all.x = TRUE)
+nrow(spx.csr.final.mscore)
+remove(list = ls()[!c(grepl("spx.csr.final.mscore", ls()))])
+mydb <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov')
+mydb.processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_processed')
 
 
 
@@ -202,10 +208,18 @@ colnames(spx.ceo.comp) <- c("Ticker","CEOPay")
 spx.ceo.comp$Ticker <- gsub(" ", "", spx.ceo.comp$Ticker, fixed = TRUE)
 spx$Ticker <- gsub(" ", "", spx$Ticker, fixed = TRUE)
 spx.ceo.comp.final <- merge(x=spx, y=spx.ceo.comp, by.x="Ticker", by.y="Ticker", all.x = TRUE)
+nrow(spx.ceo.comp.final)
+
+
+spx.csr.final.mscore.ceo.comp <- merge(x=spx.csr.final.mscore, y=spx.ceo.comp.final[c("Ticker","CEOPay")], by.x="Ticker", by.y="Ticker", all.x = TRUE)
+summary(spx.csr.final.mscore.ceo.comp)
+
+
+
 dbWriteTable(
   mydb.processed, 
-  value = spx.ceo.comp.final, 
-  name = "spx_ceo_comp", 
+  value = spx.csr.final.mscore.ceo.comp, 
+  name = "spx_cgcp", 
   overwrite = TRUE,
   row.names=FALSE
 ) 
