@@ -1,0 +1,59 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww14200\viewh15420\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Cover Slide\
+\
+Hi guys, my name is conor reid and the title of my dissertation is \'93the relationship between corporate governance and company performance, ne factors, new models and new approaches to causality\'94. \
+\
+so this is just a rundown of what ill cover over the next few minutes. ill start off with the motivation behind this project and the previous work in this space. ill move on to my approach and methods used, a summary of some of the results (not all since we\'92re fairly limited on time). then a little bit about the business and academic contribution of this project, ending with conclusions and future work in this space .\
+\
+ok so companies across the world vary greater in their corporate governance models, with a lot of debate on how different styles impact company performance over a number of different metrics. this leads to a natural question then, about how to optimise governance for best performance, and what even defines best performance? moldovan and mutu in 2015 attempted to answer those questions. so they scraped some data from the bloomberg financial data system, did some predictive modelling and proposed some simple if-this-then-that style rules for corporate governance best practice. so this study is very much a continuation and extension of their work. \
+\
+in terms of what they achieved and maybe some gaps in their work. they were able to identify a number of correlations in the dataset using a few different algorithms of differing accuracy. although they left some types of analysis unexplored, specifically limiting the study to correlation identification rather than any sort of causal analysis or justification. so thats the gap that this project is targeting. \
+holland in 1986 discusses how statistical models can be used for casual inference, which again is topic discussed by a guy called judea pearl who\'92s done some really influential work in this space.  \
+\
+right so my approach to this problem can be described as \
+	reproducing some of moldovan and mutus work, which involved thresholding on continuous dependant variables and implementing classification \
+	augment that work with regression, so not thresholding on those values\
+	then integrating some other features of corporate governancee and company success that the original authors didn\'92t include\
+		so things like CEO compensation, environmental and social performance, and the banish m score as a dependent variable which is a probabilistic measure of whether a company has misreported their financial statements\
+	and finally apply some cutting edge causal research to this domain using the rules proposed by the original authors.\
+\
+relating that to methodology then\
+	to reproduce their results ill be using the same dataset, with two of the algorithms they implemented\
+	for the regression stage ill be using regularised linear regression in R\
+	the other features i include in my analysis come from Bloomberg and i used r to integrate them\
+	and for the casual portion of the study Iim implement propensity score matching which aims to replicate a randomised controlled experiment on observational data\
+\
+\
+so propensity score matching is a statistical technique that attempts to estimate the effect of a treatment on some outcome by accounting for the variables that predict receiving that treatment. so sometimes the difference in outcome between the untreated and treated group depends on variables that influenced whether or not a unit received the treatment, instead of the effect of the treatment itself. so in randomised controlled experiments (like standard drug trials) you can assume that the groups are the same and that the assignment of the treatment is random. but in observational studies like this, you can\'92t assume that. so matching aims to mimic that randomisation by finding pairs in the dataset that did and didn\'92t receive the treatment. \
+\
+\
+\
+ok so some results. I\'92m not including any of the classification or regression results here purely because time is pretty tight, so I\'92m jumping straight to the causal analysis stage. \
+I mentioned propensity score matching replicates this idea of a randomised controlled experiment, like a standard drug trial where you have a control group and treatment group, who differ only in the allocation of that treatment. so propensity score matching requires you to pick a feature from the dataset to act as that treatment, then attempts to construct a control and treatment group that are characteristically similar in all other features apart from that treatment variable. \
+so this slide shows the results of picking CEO compensation over the median as the treatment, with the companies tobins q as the dependant variable and using companies in the S&P. the results here show that those in the treatment group, so companies with a CEO earning more than the median, actually experience a drop in tobins q of between 6 and 11% which is pretty significant. and propensity score matching gives you the plots for each feature in the dataset, three of which I\'92ve included here. what we\'92re looking for is an overlap in the x-axis showing that we have similar cases in the treatment and control groups. so the matching is pretty good here.\
+\
+\
+ok so going on to another set of results. this is for the top 600 companies in europe, and uses the presence of an independent lead director and a financial leverage score of greater than 2.5 as the treatment, with the altman z score as the target. we see here a massive decrease of between 24 and 30%. and we can see that the matching quality is still pretty good. \
+\
+the last set of results are for the same group of companies, tobins q as the target. this uses the presence of an independent chairmen or female CEO as the treatment. the matching is pretty good and the estimated effect is between 7 and 13% so pretty significant again. \
+\
+\
+right so on to the contributions of this study, academically speaking its all about being able to use causal analysis in this domain with a view to identifying correlations that have causal merit\
+business contribution is similar then, its all about contributing to the existing literature on corporate governance best practice. \
+\
+conclusions then. first off i was able to verify the existing correlations and strengthened them with regression algorithms too. I was also able to integrate new independent and dependant features to facilitate new insight that we saw above,. and finally and most importantly, i was able to identify a subset of correlations that actually have something approaching causal merit.\
+\
+finally then for future work, theres some work that could be done on the dataset in terms of including other markets or looking at poorly performing companies as well as highly performant ones. using different data source and potentially integrating historical data\
+in terms of techniques I think exploring the back door criterion would be useful, which helps to select the right variables to control the matching on\
+instrumental variables is a technique for causal estimation when some of the independent variables are correlated with the error term in a regression model. so that could be an interesting way forward. \
+\
+great so thank you very much for you time, and ill take any questions you might have.\
+\
+\
+}
