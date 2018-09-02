@@ -48,6 +48,7 @@
 \definecolor{gray}{gray}{0.9}
 % LaTeX Packages to use
 \usepackage{makeidx}
+
 %\usepackage{showidx} % for drafts: shows in margin what will be indexed
 \usepackage{amsthm,amsmath,amsfonts,amssymb,latexsym,graphicx,appendix,subfigure}
 % the ams* packages provide the (very useful) LaTeX extensions from the AMS (Amer. Math. Soc.)
@@ -105,6 +106,8 @@
 \makeindex % generates the index entries (unsorted: need to run makeindex from the command line to sort them)
 
 
+
+
 % Use the following to only include certain chapters (it will speed up compilation of the part you
 % are currently working on, should the dissertation as a whole take excessively long to compile).
 \includeonly{%
@@ -112,12 +115,12 @@ preface%
 ,
 ch1%
 ,%
-ch2%
-,%
+%ch2%
+%,%
 ch3
 ,%
-ch4%
-,
+%ch4%
+%,
 ch5%
 ,
 ch6%
@@ -260,6 +263,8 @@ University College Dublin
 % \renewcommand{\cftchapfont}{Chapter }
 
 \cleardoublepage
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
 \tableofcontents
 \clearpage
 \listoftables
