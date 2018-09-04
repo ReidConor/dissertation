@@ -107,7 +107,7 @@ Below, some summary statistics are presented on the dependent variables used in 
 \caption{Classification Results  - S\&P 500, Altman Z Score}
 \end{table}
 \clearpage
-{Shown below is a sample decision tree, constructed by the C5.0 (implementation of J48) for the Altman Z score. This was constructed using the auxiliary features included in this study. Although those variables do not drastically influence the aggregate model performance (as shown by the tables above), the social disclosure score interestingly appears near the bottom and is assigned an importance of 5\% by the algorithm. }\\
+{Shown below is a sample decision tree, constructed by the C5.0 (equivalent to J48) for the Altman Z score. This was constructed using the auxiliary features included in this study. Although those variables do not drastically influence the aggregate model performance (as shown by the tables above), the social disclosure score interestingly appears near the bottom and is assigned an importance of 5\% by the algorithm. }\\
 %\begin{lstlisting}[
 %    basicstyle=\tiny, %or \small or \footnotesize etc.
 %    caption={J48 - S\&P with Extra Variables for Altman Z Score - Decision Tree},
@@ -276,7 +276,7 @@ Below, some summary statistics are presented on the dependent variables used in 
 
 \clearpage
 \section{Regression}\label{S.regression4}
-{There are no results from the original study to directly compare the regression results to, and so they are presented stand-alone. Tables are broken down by index and dependant variable.  An indication is given, in the form of yellow highlighting, of the optimal $alpha$ value and thus the optimal mix of ridge and lasso regression for each results set.  }\clearpage
+{There are no results from the original study to directly compare the regression results to, and so they are presented stand-alone. Tables are broken down by market and dependant variable.  An indication is given, in the form of yellow highlighting, of the optimal $alpha$ value and thus the optimal mix of ridge and lasso regression for each results set.  }\clearpage
 \subsection*{S\&P 500}
 {Shown below are regression results for the S\&P 500 stock index. }
 \begin{table}[h!]
@@ -479,8 +479,8 @@ Five Var&1 (Lasso)&0.290548584733936&0.949720674526324 \\
 
 \clearpage
 \section{Causal Estimation}\label{S.causal4}
-{This section deals with results pertaining the the causal estimation stage of the current study. As mentioned before, causal estimation here involves the selection of treatment and effect pairs, as well as covariates to control on. Results are presented with reference to these pairs and covariates, and reference back to the motivating statement made in the original study where appropriate (see section \ref{CausalEstimation-ResearchQuestions} for more detail). \\\\
-Note that while all original findings are tied to specific markets, those findings were tested for all markets in this study. Therefore the motivating statement listed for a particular set of results below may not match the dataset to which it was originally assigned. In some cases it was not possible to achieve a sufficient matching rate for particular datasets, in others the estimates were insignificant or the 95\% CI crossed zero. In cases of the latter, results are omitted because the aggregate direction of the effect cannot be determined.\\\\
+{This section deals with results pertaining the the causal estimation stage of the current study. As mentioned before, causal estimation involves the selection of treatment and effect pairs, as well as covariates to control on. Results are presented with reference to these pairs and covariates, and reference back to the motivating statement made in the original study where appropriate (see section \ref{CausalEstimation-ResearchQuestions} for more detail). \\\\
+Note that while all original findings are tied to specific markets, those findings were tested for all markets in this study. Therefore the motivating statement listed for a particular set of results below may not match the dataset to which it was originally assigned. In some cases it was not possible to achieve a sufficient matching rate for particular datasets, in others the estimates were insignificant or the 95\% CI crossed zero. In these cases, results are omitted because the aggregate direction of the effect cannot be determined.\\\\
 Each result set is presented following a uniform template, as per section \ref{interpretationCausal}. 
 %A header is given as an indication of the type of corporate governance features involved. The market for which the results relate is listed, followed by the dependent variable. The treatment is given in the form:
 %\begin{equation}
@@ -498,7 +498,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & S\&P 500  \\
 {\bf Outcome} & Altman Z Score \\
 {\bf Treatment} & \footnotesize{(Indep Lead Dir \& Financial Leverage $>$ 2.5)? 1 : 0 } \\
-{\bf Motivating Statement} & Statement \ref{spTwo} [agrees, original]  \\
+{\bf Motivating Statement} & \ref{spTwo} [agrees, original]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (-0.15 , -0.12 , -0.09) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -528,7 +528,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & S\&P 500  \\
 {\bf Outcome} & Tobins Q Score \\
 {\bf Treatment} & CEO Comp $>$ median(CEO Comp)? 1 : 0  \\
-{\bf Motivating Statement} & Statement \ref{wildOne} [agrees, original] \\
+{\bf Motivating Statement} & \ref{wildOne} [agrees, original] \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (-0.11, -0.085, -0.06) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -617,7 +617,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & S\&P 500  \\
 {\bf Outcome} & Altman Z Score \\
 {\bf Treatment} & \footnotesize{Social Disclosure $>$ mean(Social Disclosure) ? 1 : 0 } \\
-{\bf Motivating Statement} & Statement \ref{wildTwo} [agrees, NA ]  \\
+{\bf Motivating Statement} & \ref{wildTwo} [agrees, NA ]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (0.04 , 0.09 , 0.14) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -651,7 +651,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & STOXX Europe 600  \\
 {\bf Outcome} & Tobin's Q Score \\
 {\bf Treatment} & {\% Female's on Board  $>$  20\%? 1 : 0 } \\
-{\bf Motivating Statement} & Statements \ref{westTwo} [disagrees, original], \ref{spOne} [agrees, not original]  \\
+{\bf Motivating Statement} & \ref{westTwo} [disagrees, original], \ref{spOne} [agrees, not original]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (0.06, 0.1, 0.14) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -681,7 +681,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & STOXX Europe 600  \\
 {\bf Outcome} & Tobin's Q Score \\
 {\bf Treatment} & {(Indep Director $\mid$  Former CEO on Board)? 1 : 0 } \\
-{\bf Motivating Statement} & Statement \ref{westOne} [disagrees, original]  \\
+{\bf Motivating Statement} & \ref{westOne} [disagrees, original]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (0.30 , 0.35 , 0.40) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -711,7 +711,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & STOXX Europe 600  \\
 {\bf Outcome} & Altman Z Score \\
 {\bf Treatment} & \footnotesize{(Indep Lead Dir \& Financial Leverage $>$ 2.5)? 1 : 0 } \\
-{\bf Motivating Statement} & Statement \ref{spTwo} [agrees, not original]  \\
+{\bf Motivating Statement} & \ref{spTwo} [agrees, not original]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (-0.30 , -0.27 , -0.24) \\~\\
 {\bf Matching Plots} &
 \end{tabular}
@@ -743,7 +743,7 @@ Each result set is presented following a uniform template, as per section \ref{i
 {\bf Market} & STOXX Eastern Europe 300  \\
 {\bf Outcome} & Altman Z Score \\
 {\bf Treatment} & {(Indep Chairman $\mid$  Female CEO)? 1 : 0 } \\
-{\bf Motivating Statement} & Statement \ref{eastThree} [agrees, original]  \\
+{\bf Motivating Statement} & \ref{eastThree} [agrees, original]  \\
 {\bf Estimate ($\% \Delta , 95\% \ CI$)} &  (0.24, 0.29, 0.34) \\~\\
 {\bf Matching Plots} &
 \end{tabular}

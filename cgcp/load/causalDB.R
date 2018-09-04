@@ -120,6 +120,13 @@ spx_indep_dir_fincl_lev <- function (){
   spx.imputed["Indep.Lead.Dir.Fincl..l"] <- ifelse(spx.imputed$Indep.Lead.Dir == 1 & spx.imputed$Fincl..l > 2.5, as.double(1), as.double(0))
   spx.imputed["AZS.class.Binary"] <- ifelse(spx.imputed$AZS.class == 3, 1, 0)
   spx.imputed$AZS.class <- NULL
+  summary(spx.imputed)
+  table(spx.imputed$Indep.Lead.Dir.Fincl..l)
+  spx.imputed$Indep.Lead.Dir.Fincl..l <- as.factor(spx.imputed$Indep.Lead.Dir.Fincl..l)
+  
+  spx.imputed <- SMOTE(Indep.Lead.Dir.Fincl..l ~ ., spx.imputed, perc.over = 100, perc.under=200)
+  spx.imputed$Indep.Lead.Dir.Fincl..l <- ifelse(spx.imputed$Indep.Lead.Dir.Fincl..l == 0, as.double(0), as.double(1))
+  
   
   dbWriteTable(mydb_causal, value = spx.imputed, name = "spx_indepdirfincl", overwrite = TRUE,row.names=FALSE ) 
   remove(list = ls()[!(grepl("mydb_", ls()))])
@@ -497,7 +504,7 @@ sxxp_indepDir_FormerCEOBoard <- function(){
   sxxp.imputed["Indep.Lead.Dir.Former.CEO.on.Board"] <- ifelse(sxxp.imputed$Indep.Lead.Dir == 1 & sxxp.imputed$Frmr.CEO.or.its.Equiv.on.Bd == 1, as.double(1), as.double(0))
   
   sxxp.imputed$Indep.Lead.Dir.Former.CEO.on.Board <- as.factor(sxxp.imputed$Indep.Lead.Dir.Former.CEO.on.Board)
-  #sxxp.imputed <- SMOTE(Indep.Lead.Dir.Former.CEO.on.Board ~ ., sxxp.imputed, perc.over = 100, perc.under=200)
+  sxxp.imputed <- SMOTE(Indep.Lead.Dir.Former.CEO.on.Board ~ ., sxxp.imputed, perc.over = 100, perc.under=200)
   sxxp.imputed$Indep.Lead.Dir.Former.CEO.on.Board <- ifelse(sxxp.imputed$Indep.Lead.Dir.Former.CEO.on.Board == 1, as.double(1), as.double(0))
   
   dbWriteTable(mydb_causal, value = sxxp.imputed, name = "sxxp_indepdirformerceo", overwrite = TRUE,row.names=FALSE ) 
@@ -873,7 +880,12 @@ eebp_female_board <- function (){
   eebp.imputed$X..Women.on.Bd <- ifelse(eebp.imputed$X..Women.on.Bd > 20, 1, 0)
   eebp.imputed$X..Women.on.Bd <- as.factor(eebp.imputed$X..Women.on.Bd)
   eebp.imputed$X..Women.on.Bd <- ifelse(eebp.imputed$X..Women.on.Bd == 0, as.double(0), as.double(1))
+  eebp.imputed$X..Women.on.Bd <- as.factor(eebp.imputed$X..Women.on.Bd)
+  summary(eebp.imputed$X..Women.on.Bd)
   
+  eebp.imputed <- SMOTE(X..Women.on.Bd ~ ., eebp.imputed, perc.over = 300, perc.under=100)
+
+  eebp.imputed$X..Women.on.Bd <- ifelse(eebp.imputed$X..Women.on.Bd == 0, as.double(0), as.double(1))
   dbWriteTable(mydb_causal, value = eebp.imputed, name = "eebp_fboard", overwrite = TRUE,row.names=FALSE ) 
   remove(list = ls()[!(grepl("mydb_", ls()))])
   

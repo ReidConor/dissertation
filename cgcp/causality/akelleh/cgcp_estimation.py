@@ -183,7 +183,7 @@ def wmOnBoard(dataset, target, data_table, imp_vars_table, imp_limit=10):
 
     matcher = PropensityScoreMatching()
     ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
-
+    print(ATE_results)
     matcher.check_support(data, treatment, controlFor)
 
     controlForPS = controlFor.copy()
@@ -349,7 +349,7 @@ def indepDirFormerCEOBoard(dataset, target, data_table, imp_vars_table, imp_limi
 
     matcher = PropensityScoreMatching()
     ATE_results = matcher.estimate_ATE(data, treatment, target, controlFor, bootstrap=True)
-
+    print(ATE_results)
     matcher.check_support(data, treatment, controlFor)
 
     controlForPS = controlFor.copy()
@@ -488,7 +488,7 @@ if __name__ == "__main__":
     #indepChaFCEO("sxxp", "AZS.class.Binary", "sxxp_indepChFmlCEO", "sxxp_altman_imp_vars", imp_limit=9)
 
     #matching not great for first 2/3, good after that
-    #wmOnBoard("eebp","Tobins.Q.class","eebp_fboard","eebp_tobin_q_imp_vars", imp_limit=7)
+    #wmOnBoard("eebp","Tobins.Q.class","eebp_fboard","eebp_tobin_q_imp_vars", imp_limit=9)
     #wmOnBoard("eebp","AZS.class.Binary","eebp_fboard","eebp_altman_imp_vars", imp_limit=7)
     #wmOnBoard("spx","Tobins.Q.class", "spx_fboard","spx_tobin_q_imp_vars", imp_limit=9)
     #wmOnBoard("spx","AZS.class.Binary", "spx_fboard","spx_altman_imp_vars")
@@ -513,7 +513,7 @@ if __name__ == "__main__":
     #very few variables actually being used here, overall not great but might be usable
     #finlL("eebp", "Tobins.Q.class" , "eebp_fl", "eebp_tobin_q_imp_vars")
     #finlL("eebp", "AZS.class.Binary" , "eebp_fl", "eebp_altman_imp_vars", imp_limit=4)
-    #finlL("spx", "Tobins.Q.class", "spx_fl", "spx_tobin_q_imp_vars", imp_limit=10)
+    #finlL("spx", "Tobins.Q.class", "spx_fl", "spx_tobin_q_imp_vars", imp_limit=5)
     #finlL("spx", "AZS.class.Binary", "spx_fl", "spx_altman_imp_vars", imp_limit=2)
     #finlL("sxxp", "Tobins.Q.class", "sxxp_fl", "sxxp_tobin_q_imp_vars", imp_limit=1)
     #finlL("sxxp", "AZS.class.Binary", "sxxp_fl", "sxxp_altman_imp_vars", imp_limit=5) #this is decent
@@ -539,7 +539,7 @@ if __name__ == "__main__":
     #esg("spx", "Tobins.Q.class" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_tobin_q_imp_vars",imp_limit=6)
     #esg("spx", "AZS.class.Binary" , "FAIR_REMUNERATION_POLICY", "spx_csr", "spx_altman_imp_vars",imp_limit=5)
     #esg("spx", "Tobins.Q.class" , "social_disc_over_avg", "spx_csr", "spx_tobin_q_imp_vars") #pretty good matching
-    #esg("spx", "AZS.class.Binary" , "social_disc_over_avg", "spx_csr", "spx_altman_imp_vars",imp_limit=8) #pretty good matching
+    esg("spx", "AZS.class.Binary" , "social_disc_over_avg", "spx_csr", "spx_altman_imp_vars",imp_limit=9) #pretty good matching
     #esg("spx", "Tobins.Q.class" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_tobin_q_imp_vars")
     #esg("spx", "AZS.class.Binary" , "EQUAL_OPPORTUNITY_POLICY", "spx_csr", "spx_altman_imp_vars")
     #esg("spx", "Tobins.Q.class" , "ANTI.BRIBERY_ETHICS_POLICY", "spx_csr", "spx_tobin_q_imp_vars")

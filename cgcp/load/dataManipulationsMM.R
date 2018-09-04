@@ -30,3 +30,9 @@ mydb_processed <- dbConnect(MySQL(), user='root', password='', dbname='corp_gov_
 dbWriteTable(mydb_processed, value = spx, name = "spx", overwrite = TRUE ) 
 dbWriteTable(mydb_processed, value = sxxp, name = "sxxp", overwrite = TRUE ) 
 dbWriteTable(mydb_processed, value = eebp, name = "eebp", overwrite = TRUE ) 
+
+
+spx.cgcp<-dbReadTable(conn=mydb_processed,name='spx_cgcp')
+spx.cgcp["EightVarEq.class"]<-ifelse(spx.cgcp$EightVarEq >= -2.22, 1, 0)
+spx.cgcp["FiveVarEq.class"]<-ifelse(spx.cgcp$FiveVarEq >= -2.22, 1, 0)
+dbWriteTable(mydb_processed, value = spx.cgcp, name = "spx_cgcp", overwrite = TRUE ) 

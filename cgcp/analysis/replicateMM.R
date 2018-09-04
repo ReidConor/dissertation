@@ -11,6 +11,9 @@ spx <- dbReadTable(conn=mydb,name='spx')
 sxxp <- dbReadTable(conn=mydb,name='sxxp')
 eebp <- dbReadTable(conn=mydb,name='eebp')
 spx.cgcp <- dbReadTable(conn=mydb,name='spx_cgcp')
+summary(spx.cgcp$FiveVarEq)
+summary(spx.cgcp$FiveVarEq)
+
 
 summary(spx)
 
@@ -159,7 +162,20 @@ j48 <- function(dataset, target){
              "AZS.class",
              "AZS",
              "Tobins.Q",
-             "Tobins.Q.class")
+             "Tobins.Q.class",
+             "EightVarEq",
+             "FiveVarEq",
+             "EightVarEq.class",
+             "FiveVarEq.class",
+             "DSRI",
+             "GMI",  
+             "AQI",  
+             "SGI",
+             "DEPI",
+             "SGAI",
+             "TATA",
+             "LVGI" 
+             )
   drops=drops[drops != target]#dont want to drop whatever is passed as the target
   data.reduced<-dataset[ , !(names(dataset) %in% drops)] #remove unwanted columns
   data.reduced<-data.reduced[complete.cases(data.reduced[ , target]),]# we only want records with a class indicator
