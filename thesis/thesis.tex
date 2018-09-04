@@ -48,7 +48,7 @@
 \definecolor{gray}{gray}{0.9}
 % LaTeX Packages to use
 \usepackage{makeidx}
-
+\usepackage{longtable}
 %\usepackage{showidx} % for drafts: shows in margin what will be indexed
 \usepackage{amsthm,amsmath,amsfonts,amssymb,latexsym,graphicx,appendix,subfigure}
 % the ams* packages provide the (very useful) LaTeX extensions from the AMS (Amer. Math. Soc.)
@@ -56,6 +56,8 @@
 % graphicx gives control over image files, e.g., width, etc
 % appendix gives more fine-tuned control over the appendices
 % subfigure lets you put multiple figures (and tables) in a figure environment, so you can refer to them individually, e.g., Figure~6(b).
+\usepackage{listings}
+\usepackage{rotating}
 \usepackage{algorithm2e} % handles algorithms in a nice way, akin to tables and figures
 \usepackage[subfigure]{tocloft}  % package allows you to control the design of table of contents, figures and tables. use subfigure for compatibility -- jmmcd
 \usepackage{natbib}   % gives more control over references and style of citation.  Has a lot of options, e.g., can use the [sectionbib] option to have multiple bibliographies in my document, listed in sections rather than chapters. Need this package for Chicago Manual of Style BibTeX referencing and the MScBA derived style
@@ -115,25 +117,25 @@ preface%
 ,
 ch1%
 ,%
-%ch2%
-%,%
+ch2%
+,%
 ch3
 ,%
-%ch4%
+ch4%
+,
+%ch5%
 %,
-ch5%
-,
-ch6%
-,
-ch7%
-,
+%ch6%
+%,
+%ch7%
+%,
 appendix1%
 ,
 appendix2%
-,
-glossary%
-,
-notation
+%,
+%glossary%
+%,
+%notation
 }
 
 
@@ -254,20 +256,20 @@ University College Dublin
 
 %% Dedication
 \chapter*{Dedication}
-{To my...}
+{To my family and friends who supported me throughout the last two years.}
 
 
 
 %% Table of Contents
 % If you would like the word ``Chapter '' to appear before the chapter number in your Contents, uncomment:
-% \renewcommand{\cftchapfont}{Chapter }
+%\renewcommand{\cftchapfont}{Chapter }
 
 \cleardoublepage
-\setcounter{secnumdepth}{2}
-\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{1}
 \tableofcontents
 \clearpage
-\listoftables
+%\listoftables
 %\renewcommand{\cftchapfont}{}
 
 % Note: to show subfigures, subtables (if any) in the appropriate list below, uncomment the following command
@@ -288,7 +290,7 @@ University College Dublin
 \clearpage
 
 %% List of Figures (Illustrations)
-\listoffigures\addcontentsline{toc}{chapter}{List of figures}
+%\listoffigures\addcontentsline{toc}{chapter}{List of figures}
 
 \clearpage
 %% List of Tables
@@ -317,14 +319,16 @@ University College Dublin
 %% Acknowledgements (including permissions and other credits).  Modify as appropriate
 
 \chapter{Acknowledgements}
-Thanks to...
-
+{Thanks to Dr. James McDermott and Dr. Miguel Nicolau for first proposing this project, and for their subsequent guidance and support throughout the execution. They were always very generous with their time, for which I am very grateful. }
 
 %% Abstract
 
 %\begin{abstract}
 \chapter{Abstract}
-{This project...}
+{Corporate governance models, styles and practices vary widely between companies and across regions. There is much debate on the influence of those differing models on company outcomes, as measured by various economic indicators. It is natural then to ask how one optimises corporate governance structures to best influence economic outcomes, and what best characterises those outcomes? \\\\
+This project aims to address these questions, by first analysing the work of \cite{moldovan2015learning} and replicating their findings. We then extend those findings, by remodelling the problem and using auxiliary measures of corporate governance and company performance. Most importantly, we introduce modern methods of causal inference to this space in an effort to go beyond simple correlation towards the identification of stronger and more useful casual influences. \\\\
+Using those correlations and {\it if-this-then-that} style rules proposed by \cite{moldovan2015learning}, we identify those that have causal merit as well as those that do not. Using the surrounding literature then, we compliment those findings with causal analysis in other areas to more holistically characterise the relationship between corporate governance and economic success.    
+}
 %%   List of important abbreviations (including special fonts, e.g.,\ {\tt fixed width} for program code)
 
 % Bulk of thesis. line numbers in arabic numerals, 1, 2, 3, ...
@@ -357,15 +361,15 @@ Thanks to...
 %%   majority of this should just be put on the accompanying CD/DVD.
 %%   \include appendix/ces as it/they will be big enough to justify its/their own ``chapter(s)''
 \cleardoublepage
-\appendix
-\addappheadtotoc         % adds a separating entry to the TOC, saying Appendices
+%\appendix
+%\addappheadtotoc         % adds a separating entry to the TOC, saying Appendices
 \noappendicestocpagenum  % ensures there is no page number after that TOC separating entry
 % It may happen that the first appendix (e.g., Detailed Tables) appears before the "Appendices" line
 % in the table of contents.  If so, edit thesis.toc and move the Appendices line there above the first appendix,
 % then re-run LaTeX to get the thesis.dvi file right.  You may have to repeatedly do this every time you LaTeX!
 \cleardoublepage
 %detailed tables
-%\include{appendix1}
+\include{appendix1}
 \include{appendix2}
 % and so on
 
@@ -432,9 +436,9 @@ Thanks to...
 
 %%   Notation Index / List of Symbols
 %%   \include this as it may be big enough to justify its own ``chapter''
-\cleardoublepage
-\addcontentsline{toc}{chapter}{List of Notation}
-\include{notation}
+%\cleardoublepage
+%\addcontentsline{toc}{chapter}{List of Notation}
+%\include{notation}
 
 %%   Index
 %\cleardoublepage
